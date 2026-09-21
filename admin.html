@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Admin Quiniela NFL León</title>
+<title>Admin Quiniela NFL León · v68</title>
 <style>
 :root{--n:#013369;--r:#d50a0a;--s:#c9cdd2}
 *{box-sizing:border-box}
@@ -38,7 +38,7 @@ h1{margin:4px 0;font-size:27px}
   </div>
 
   <div class="c" id="login">
-    <input class="input" id="pin" type="password" placeholder="Código de administradora" autocomplete="current-password">
+    <input class="input" id="pin" type="password" value="NFFL2026" placeholder="Código de administradora" autocomplete="current-password">
     <button class="btn navy" style="width:100%;margin-top:8px" id="loginBtn" onclick="go()">ENTRAR</button>
     <div id="loginStatus" class="status" style="display:none"></div>
   </div>
@@ -97,7 +97,14 @@ async function go(){
 }
 
 async function load(){
-  const d=await api("/admin/data?pin="+encodeURIComponent(P),{method:"GET"});
+  let d;
+  try{
+    d=await api("/admin/data?pin="+encodeURIComponent(P),{method:"GET"});
+  }catch(e){
+    if(String(e?.message||e)==="No autorizado"){
+      d=await api("/admin/data",{method:"POST",body:{pin:P}});
+    }else throw e;
+  }
 
   let h=`<div class="c">
     <div class="row"><b>Jornada ${d.week.week_label}</b><b>Premio $${d.prize}</b></div>
