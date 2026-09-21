@@ -117,11 +117,11 @@ async function load(){
       <button class="btn red" onclick="psync('super_bowl')">Super Bowl</button>
     </div>
   </div>
-  <div class="c"><h3>Pagos</h3>`;
+  <div class="c"><h3>Pagos</h3><div class="muted">Toca “Confirmar pago” para registrar el pago. El premio se actualiza automáticamente.</div>`;
 
   d.entries.forEach(e=>h+=`<div class="entry">
     <div><b>${e.participant_name}</b><div>${e.total_points??0} puntos</div></div>
-    <button class="btn ${e.payment_status==="paid"?"navy":"red"}" onclick="pay('${e.id}','${e.payment_status==="paid"?"pending":"paid"}')">
+    <button type="button" class="btn ${e.payment_status==="paid"?"navy":"red"}" data-payment-id="${e.id}" onclick="pay(this,'${e.id}','${e.payment_status==="paid"?"pending":"paid"}')">
       ${e.payment_status==="paid"?"Pagado ✓":"Confirmar pago"}
     </button>
   </div>`);
@@ -180,9 +180,19 @@ async function load(){
   el("app").innerHTML=h;
 }
 
-async function pay(id,status){
-  await api("/admin/payment",{method:"POST",body:JSON.stringify({pin:P,id,status})});
-  await load();
+async function pay(btn,id,status){
+  if(!id||!P){alert("Sesión de administradora no disponible. Vuelve a entrar.");return}
+  const original=btn?btn.textContent:"Confirmar pago";
+  if(btn){btn.disabled=true;btn.textContent="Guardando…"}
+  try{
+    const r=await api("/admin/payment",{method:"POST",body:{pin:P,id,status}});
+    if(!r||r.ok!==true)throw Error("El servidor no confirmó el pago.");
+    await load();
+    alert(status==="paid"?"✅ Pago confirmado correctamente.":"↩️ Pago cambiado a pendiente.");
+  }catch(e){
+    if(btn){btn.disabled=false;btn.textContent=original}
+    alert("⚠️ No se pudo actualizar el pago: "+(e?.message||e));
+  }
 }
 
 async function res(id){
