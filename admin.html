@@ -84,7 +84,7 @@ async function go(){
   btn.disabled=true;
   btn.textContent="ENTRANDO…";
   status.style.display="block";
-  status.textContent="Conectando con el panel…";
+  status.textContent="Verificando acceso…";
   try{
     await load();
     el("login").style.display="none";
@@ -96,11 +96,9 @@ async function go(){
   }
 }
 
-el("pin").addEventListener("keydown",e=>{
-  if(e.key==="Enter")go();
-});
-
 async function load(){
+  const d=await api("/admin/data?pin="+encodeURIComponent(P),{method:"GET"});
+
   const d=await api("/admin/data",{
     method:"POST",
     body:JSON.stringify({pin:P})
