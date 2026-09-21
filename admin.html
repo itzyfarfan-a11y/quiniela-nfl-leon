@@ -99,11 +99,6 @@ async function go(){
 async function load(){
   const d=await api("/admin/data?pin="+encodeURIComponent(P),{method:"GET"});
 
-  const d=await api("/admin/data",{
-    method:"POST",
-    body:JSON.stringify({pin:P})
-  });
-
   let h=`<div class="c">
     <div class="row"><b>Jornada ${d.week.week_label}</b><b>Premio $${d.prize}</b></div>
     <div class="muted">${d.count} participantes · ${d.paid} pagos confirmados</div>
