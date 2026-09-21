@@ -17,8 +17,8 @@ h1{margin:4px 0;font-size:29px}.c{background:#fff;padding:14px;margin:10px 0;bor
 .helpBtns{display:grid;grid-template-columns:1fr 1fr;gap:8px}.table{width:100%;border-collapse:collapse}.table td,.table th{padding:8px;border-bottom:1px solid #e2e6ea;text-align:left;font-size:14px}
 .boardWrap{overflow-x:auto;border-radius:12px}.board{border-collapse:separate;border-spacing:0;width:max-content;min-width:100%;font-size:12px}
 .board th,.board td{border-right:1px solid #d8dde3;border-bottom:1px solid #d8dde3;padding:7px 5px;text-align:center;white-space:nowrap}
-.board th{background:#061b33;color:#fff;position:sticky;top:0;z-index:2}.board th.name,.board td.name{position:sticky;left:0;z-index:3;background:#fff;text-align:left;min-width:125px;font-weight:800}.board th.name{background:#013369;color:#fff}
-.boardCell{font-weight:900;min-width:65px}.boardCell.ok{background:rgba(34,197,94,.35);color:#14532d}.boardCell.bad{background:rgba(239,68,68,.35);color:#7f1d1d}.boardCell.pending{background:#f1f5f9;color:#64748b}
+.board th{background:#061b33;color:#fff;position:sticky;top:0;z-index:2}.board th.name,.board td.name{position:sticky;left:0;z-index:3;background:#fff;text-align:left;min-width:92px;max-width:105px;font-weight:800}.board th.name{background:#013369;color:#fff}
+.boardCell{font-weight:900;min-width:65px}.board th.summary,.board td.summary{min-width:52px;width:52px;font-weight:900}.boardCell.ok{background:rgba(34,197,94,.35);color:#14532d}.boardCell.bad{background:rgba(239,68,68,.35);color:#7f1d1d}.boardCell.pending{background:#f1f5f9;color:#64748b}
 .winnerRow{background:rgba(34,197,94,.25)!important;font-weight:900}.winnerBadge{display:inline-block;background:rgba(22,163,74,.25);color:#166534;border:1px solid rgba(22,163,74,.45);padding:3px 7px;border-radius:999px;font-size:11px;font-weight:900}
 .pickResult{border:2px solid #d7dce2;border-radius:14px;padding:12px;margin:8px 0;background:#fff}.pickResult.ok{border-color:#16a34a;background:#ecfdf3}.pickResult.bad{border-color:#dc2626;background:#fef2f2}.pickResult.pending{background:#f8fafc}
 .pickBadge{display:inline-block;font-weight:900;border-radius:999px;padding:4px 9px;font-size:12px}.ok .pickBadge{background:#16a34a;color:#fff}.bad .pickBadge{background:#dc2626;color:#fff}.pending .pickBadge{background:#64748b;color:#fff}
@@ -64,13 +64,20 @@ async function load(){
   <label>⭐ <input type="radio" name="s" value="${g.id}" required> Estrella (2 puntos)</label></div>`);
   h+=`<div class="c"><b>Desempate: marcador del último partido del domingo</b><div class="muted">Predice el marcador exacto; solo se usa para desempatar.</div><div class="row"><input class="input" style="width:48%" type="number" id="tba" min="0" required placeholder="Visitante"><input class="input" style="width:48%" type="number" id="tbh" min="0" required placeholder="Local"></div></div>
   <div class="c" id="gatoradeBox" style="display:${d.week.phase==="super_bowl"?"block":"none"}"><b>🥤 Desempate final — Gatorade</b><select class="input" id="gatorade"><option value="">Selecciona color</option><option>Naranja</option><option>Amarillo</option><option>Azul</option><option>Verde</option><option>Rojo</option><option>Morado</option><option>Otro</option></select></div>
-  <button class="btn red" style="width:100%">ENVIAR QUINIELA</button></form><div class="c"><a href="admin.html">Acceso administradora</a></div>`;
+  <div id="submitMsg"></div><button class="btn red" style="width:100%">ENVIAR QUINIELA</button></form><div class="c"><a href="admin.html">Acceso administradora</a></div>`;
   app.innerHTML=h;
   document.getElementById("entryForm").onsubmit=async ev=>{
    ev.preventDefault();
    const picks={}; d.games.forEach(g=>picks[g.id]=document.querySelector(`input[name="g${g.id}"]:checked`).value);
+   try{
    const sent=await api("/entry",{method:"POST",body:JSON.stringify({week_id:d.week.id,name:name.value.trim(),picks,star_game_id:document.querySelector('input[name="s"]:checked').value,tiebreaker_away_points:+tba.value,tiebreaker_home_points:+tbh.value,tiebreaker_points:+tba.value + +tbh.value,gatorade_color:d.week.phase==="super_bowl"?gatorade.value:null})});
-   const saved=await api("/entry?id="+encodeURIComponent(sent.entry_id)); activeEntryId=sent.entry_id; renderMyEntry(saved);
+   activeEntryId=sent.entry_id;
+   app.innerHTML=`<div class="c" style="text-align:center"><div style="font-size:42px">✅</div><h2>¡QUINIELA ENVIADA!</h2><p>Tu quiniela quedó registrada correctamente.</p><div class="game"><b>Nombre:</b> ${name.value.trim()}<br><b>Folio:</b> ${sent.entry_id}</div><p><b>Pago pendiente de confirmación.</b></p><p>Realiza tu transferencia y envía el comprobante por WhatsApp escribiendo <b>NFL + el mismo nombre registrado</b>.</p><button class="btn navy" style="width:100%" onclick="showBoard()">📊 VER QUINIELA Y RESULTADOS</button></div>`;
+  }catch(err){
+   const m=document.getElementById("submitMsg");
+   if(m)m.innerHTML=`<div class="game" style="color:#991b1b"><b>⚠️ No se pudo enviar:</b> ${err.message}</div>`;
+   else alert(err.message);
+  }
   };
   startRealtime(d.week.id);
  }catch(e){app.innerHTML='<div class="c">'+e.message+'</div>'}
@@ -92,8 +99,8 @@ window.showWinnerTable=function(){
  api("/board").then(x=>{
   const r=x.ranking||[], wid=x.winner_entry_id;
   let h='<div class="c"><button class="btn navy" onclick="showBoard()">← Regresar</button><h2>🥇 GANADOR</h2>';
-  if(!wid)h+='<div class="muted">Ganador oficial pendiente de cierre.</div>';
-  h+='<table class="table"><tr><th>#</th><th>Nombre</th><th>Estrella</th><th>Puntos</th><th>Desempate</th><th>Aciertos</th></tr>';
+  if(!wid)h+=`<div class="muted">Ganador oficial pendiente de cierre.</div><div style="margin-top:8px"><b>Premio acumulado:</b> $${(x.ranking.length||0)*(x.week.prize_per_entry||25)}</div>`;
+  h+='<table class="table"><tr><th>#</th><th>Nombre</th><th>Estrella</th><th>Puntos</th><th>Desempate</th><th>Aciertos</th><th>Premio</th></tr>';
   r.forEach((e,i)=>h+=`<tr class="${e.id===wid?'winnerRow':''}"><td>${i+1}</td><td><b>${e.participant_name}</b>${e.id===wid?' <span class="winnerBadge">🏆 GANADOR</span>':''}</td><td>${e.star_points>0?'⭐':'—'}</td><td>${e.total_points}</td><td>${e.score_distance===999999?'—':e.score_distance}</td><td>${e.correct_picks}</td></tr>`);
   h+='</table></div>';app.innerHTML=h;
  }).catch(e=>alert(e.message));
@@ -105,7 +112,7 @@ function renderBoard(x){
  const es=[...entries].sort((a,b)=>(rankMap.get(a.id)??999999)-(rankMap.get(b.id)??999999));
  let h='<div class="c"><button class="btn navy" onclick="location.reload()">← Regresar</button><h2>🏈 QUINIELA '+x.week.week_label+'</h2>';
  h+='<div class="row" style="margin:10px 0"><button class="btn navy" onclick="refreshGeneralBoard()">🏆 ¿VOY GANANDO?</button><button class="btn red" onclick="showWinnerTable()">🥇 GANADOR</button></div><div id="boardMsg" class="muted"></div>';
- h+='<div class="boardLegend"><span class="legend g">🟢 Acertó</span><span class="legend r">🔴 Falló</span><span class="legend p">⚪ Pendiente</span><span>☆ Estrella elegida</span><span>★ Estrella acertada</span></div><div class="boardWrap"><table id="boardTable" class="board"><thead><tr><th class="name"># · Nombre</th>';
+ h+='<div class="boardLegend"><span class="legend g">🟢 Acertó</span><span class="legend r">🔴 Falló</span><span class="legend p">⚪ Pendiente</span><span>☆ Estrella elegida</span><span>★ Estrella acertada</span></div><div class="boardWrap"><table id="boardTable" class="board"><thead><tr><th class="name"># Nombre</th><th class="summary">Aciertos</th>';
  gs.forEach(g=>h+=`<th><img src="${teamLogo(g.away_abbr)}" width="20" height="20" onerror="this.style.display='none'"><br>${g.away_abbr}<br>vs<br>${g.home_abbr}</th>`);
  h+='</tr></thead><tbody>';
  es.forEach((e,i)=>{const rk=rankMap.get(e.id);h+=`<tr><td class="name">${rk?rk+". ":""}${e.participant_name}</td>`;
