@@ -5,132 +5,171 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Quiniela NFL León</title>
 <style>
-:root{--n:#013369;--r:#d50a0a;--s:#c9cdd2}
+:root{--n:#013369;--r:#d50a0a;--gold:#f0c94b;--line:#d7dce2}
 *{box-sizing:border-box}
 body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;margin:0;background:linear-gradient(160deg,#eef2f6,#fff);color:#10233b}
-.w{max-width:760px;margin:auto;padding:12px}.h{background:linear-gradient(135deg,var(--n),#061b33);color:#fff;padding:20px;border-radius:18px;border:2px solid var(--s);text-align:center}
-.logo{width:68px;height:78px;margin:auto auto 7px;border:4px solid #fff;display:grid;place-items:center;font-weight:1000;font-size:20px;color:var(--r);background:#fff;clip-path:polygon(50% 0,100% 18%,94% 78%,50% 100%,6% 78%,0 18%)}
-h1{margin:4px 0;font-size:29px}.c{background:#fff;padding:14px;margin:10px 0;border-radius:14px;border:1px solid #d7dce2}
-.game,.entry{border:1px solid #d7dce2;border-radius:14px;padding:12px;margin:8px 0}.matchup{display:grid;grid-template-columns:1fr 48px 1fr;gap:8px;align-items:center;margin-top:8px}.teamSide{text-align:center;min-width:0}.sideTag{display:inline-block;padding:4px 12px;border-radius:8px;font-size:12px;font-weight:900;letter-spacing:.3px;margin-bottom:7px}.visitor{background:#dbe1e7;color:#1e334b}.local{background:#f0c94b;color:#17263a}.teamLogo{width:58px;height:58px;object-fit:contain;display:block;margin:0 auto 4px}.teamAbbr{font-size:19px;font-weight:950}.teamName{font-size:13px;color:#667381;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs{font-weight:1000;color:#718096;font-size:20px;text-align:center}.pick{display:block;text-align:center;margin-top:8px;font-size:16px}.starPick{margin-top:7px}.tieLabel{font-size:13px;font-weight:800;color:#20324a;margin-bottom:4px;display:block}.input{padding:11px;border:1px solid #ccd3da;border-radius:9px;font-size:16px;width:100%}
-.btn{padding:11px 14px;border:0;border-radius:10px;font-weight:900;cursor:pointer;min-height:44px}.red{background:var(--r);color:#fff}.navy{background:var(--n);color:#fff}
+.w{max-width:760px;margin:auto;padding:10px}
+.h{background:linear-gradient(135deg,var(--n),#061b33);color:#fff;padding:18px;border-radius:18px;border:2px solid #c9cdd2;text-align:center}
+.logo{width:64px;height:74px;margin:auto auto 6px;border:4px solid #fff;display:grid;place-items:center;font-weight:1000;font-size:20px;color:var(--r);background:#fff;clip-path:polygon(50% 0,100% 18%,94% 78%,50% 100%,6% 78%,0 18%)}
+h1{margin:4px 0;font-size:28px}.c{background:#fff;padding:13px;margin:9px 0;border-radius:14px;border:1px solid var(--line)}
+.game{border:1px solid var(--line);border-radius:14px;padding:11px;margin:8px 0}
+.input{padding:11px;border:1px solid #ccd3da;border-radius:9px;font-size:16px;width:100%}
+.btn{padding:12px 14px;border:0;border-radius:10px;font-weight:900;cursor:pointer;min-height:44px}
+.red{background:var(--r);color:#fff}.navy{background:var(--n);color:#fff}
 .row{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}.muted{color:#667381;font-size:13px}
-.helpBtns{display:grid;grid-template-columns:1fr 1fr;gap:8px}.table{width:100%;border-collapse:collapse}.table td,.table th{padding:8px;border-bottom:1px solid #e2e6ea;text-align:left;font-size:14px}
+.helpBtns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.matchup{display:grid;grid-template-columns:1fr 40px 1fr;gap:5px;align-items:center;margin-top:8px}
+.teamSide{text-align:center;min-width:0}.sideTag{display:inline-block;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:900;margin-bottom:6px}
+.visitor{background:#dbe1e7;color:#1e334b}.local{background:var(--gold);color:#17263a}
+.teamLogo{width:56px;height:56px;object-fit:contain;display:block;margin:0 auto 3px}
+.teamAbbr{font-size:18px;font-weight:950}.teamName{font-size:12px;color:#667381;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vs{font-weight:1000;color:#718096;font-size:20px;text-align:center}.pick{display:block;text-align:center;margin-top:7px}
+.tieLabel{font-size:13px;font-weight:800;color:#20324a;margin-bottom:4px;display:block}
+.submitMsg{margin-top:8px}.success{border:2px solid #16a34a;background:#ecfdf3;color:#14532d}.error{border:2px solid #dc2626;background:#fef2f2;color:#991b1b}
 .boardWrap{overflow-x:auto;border-radius:12px}.board{border-collapse:separate;border-spacing:0;width:max-content;min-width:100%;font-size:12px}
 .board th,.board td{border-right:1px solid #d8dde3;border-bottom:1px solid #d8dde3;padding:7px 5px;text-align:center;white-space:nowrap}
-.board th{background:#061b33;color:#fff;position:sticky;top:0;z-index:2}.board th.name,.board td.name{position:sticky;left:0;z-index:3;background:#fff;text-align:left;min-width:92px;max-width:105px;font-weight:800}.board th.name{background:#013369;color:#fff}
-.boardCell{font-weight:900;min-width:65px}.board th.summary,.board td.summary{min-width:52px;width:52px;font-weight:900}.boardCell.ok{background:rgba(34,197,94,.35);color:#14532d}.boardCell.bad{background:rgba(239,68,68,.35);color:#7f1d1d}.boardCell.pending{background:#f1f5f9;color:#64748b}
-.winnerRow{background:rgba(34,197,94,.25)!important;font-weight:900}.winnerBadge{display:inline-block;background:rgba(22,163,74,.25);color:#166534;border:1px solid rgba(22,163,74,.45);padding:3px 7px;border-radius:999px;font-size:11px;font-weight:900}
-.pickResult{border:2px solid #d7dce2;border-radius:14px;padding:12px;margin:8px 0;background:#fff}.pickResult.ok{border-color:#16a34a;background:#ecfdf3}.pickResult.bad{border-color:#dc2626;background:#fef2f2}.pickResult.pending{background:#f8fafc}
-.pickBadge{display:inline-block;font-weight:900;border-radius:999px;padding:4px 9px;font-size:12px}.ok .pickBadge{background:#16a34a;color:#fff}.bad .pickBadge{background:#dc2626;color:#fff}.pending .pickBadge{background:#64748b;color:#fff}
+.board th{background:#061b33;color:#fff;position:sticky;top:0;z-index:2}
+.board th.name,.board td.name{position:sticky;left:0;z-index:3;background:#fff;text-align:left;min-width:92px;max-width:105px;font-weight:800}
+.board th.name{background:#013369;color:#fff}.boardCell{font-weight:900;min-width:65px}
+.boardCell.ok{background:rgba(34,197,94,.35);color:#14532d}.boardCell.bad{background:rgba(239,68,68,.35);color:#7f1d1d}.boardCell.pending{background:#f1f5f9;color:#64748b}
+.summary{min-width:52px;width:52px}.starMark{font-size:17px;color:#334155}.starMark.hit{color:#FFD700;text-shadow:0 0 1px #9a7600,-1px -1px 0 #fff,1px 1px 0 #b8860b;font-weight:1000}
 .legend{padding:5px 8px;border-radius:999px;font-weight:800;font-size:12px}.legend.g{background:#dcfce7;color:#166534}.legend.r{background:#fee2e2;color:#991b1b}.legend.p{background:#f1f5f9;color:#64748b}
-.starMark{font-size:16px;color:#334155}.starMark.hit{color:#FFD700;text-shadow:0 0 1px #9a7600,-1px -1px 0 #fff,1px 1px 0 #b8860b;font-weight:1000}
-@media(max-width:520px){.w{padding:8px}.matchup{grid-template-columns:1fr 34px 1fr;gap:3px}.teamLogo{width:50px;height:50px}.teamAbbr{font-size:17px}.teamName{font-size:12px}.sideTag{padding:3px 8px;font-size:11px}.h{padding:15px 10px;border-radius:14px}h1{font-size:24px}.logo{width:58px;height:66px;font-size:18px}.c{padding:11px;margin:8px 0}.btn{width:100%}.helpBtns{grid-template-columns:1fr}.row .input{width:48%!important}.table{display:block;overflow-x:auto;white-space:nowrap}}
+.table{width:100%;border-collapse:collapse}.table td,.table th{padding:7px;border-bottom:1px solid #e2e6ea;text-align:left;font-size:13px}
+.winnerRow{background:rgba(34,197,94,.25)!important;font-weight:900}.winnerBadge{background:rgba(22,163,74,.25);color:#166534;border:1px solid rgba(22,163,74,.45);padding:3px 7px;border-radius:999px;font-size:11px;font-weight:900}
+@media(max-width:520px){.w{padding:8px}.matchup{grid-template-columns:1fr 32px 1fr;gap:3px}.teamLogo{width:50px;height:50px}.teamAbbr{font-size:17px}.sideTag{padding:3px 8px}.h{padding:15px 10px}h1{font-size:24px}.logo{width:58px;height:66px}.c{padding:11px;margin:8px 0}.helpBtns{grid-template-columns:1fr}.btn{width:100%}}
 </style>
 </head>
 <body><div class="w" id="app"></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const API_BASE="https://picivrqgmckrwutarhyw.supabase.co/functions/v1/nfl-quiniela";
-const api=(p,o={})=>{const opts={...o};opts.headers={...(o.headers||{})};if((opts.method||"GET").toUpperCase()!=="GET")opts.headers["Content-Type"]="application/json";return fetch(API_BASE+p,opts).then(async r=>{const x=await r.json();if(!r.ok)throw Error(x.error||"Error");return x});};
-let realtimeChannel=null,activeEntryId=null, currentWeekId=null;
 
-function showHelp(id){const x=document.getElementById(id);x.style.display=x.style.display==="none"?"block":"none"}
-function teamLogo(abbr){const m={LA:"lar",LAR:"lar",WAS:"wsh",WSH:"wsh",JAC:"jax",JAX:"jax",OAK:"lv",LV:"lv",SD:"lac",LAC:"lac",STL:"lar"};return "https://a.espncdn.com/i/teamlogos/nfl/500/"+(m[abbr]||abbr).toLowerCase()+".png"}
+/* IMPORTANTE: text/plain es intencional.
+   Evita el preflight CORS del navegador al enviar desde GitHub Pages.
+   El backend sigue leyendo el cuerpo con req.json(). */
+async function api(path,options={}){
+  const opts={...options,headers:{...(options.headers||{})}};
+  if((opts.method||"GET").toUpperCase()!=="GET"){
+    opts.headers["Content-Type"]="text/plain;charset=UTF-8";
+  }
+  const r=await fetch(API_BASE+path,opts);
+  let x;
+  try{x=await r.json()}catch(_){throw new Error("El servidor no respondió correctamente.")}
+  if(!r.ok)throw new Error(x.error||"Error al comunicarse con el servidor.");
+  return x;
+}
+
+let activeEntryId=null, realtimeChannel=null;
+
+function teamLogo(a){
+  const m={LA:"lar",LAR:"lar",WAS:"wsh",WSH:"wsh",JAC:"jax",JAX:"jax",OAK:"lv",LV:"lv",SD:"lac",LAC:"lac",STL:"lar"};
+  return "https://a.espncdn.com/i/teamlogos/nfl/500/"+(m[a]||a).toLowerCase()+".png";
+}
+function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));}
 
 async function load(){
- try{
-  const d=await api("/week"); currentWeekId=d.week.id;
-  let h=`<div class="h"><div class="logo">NFL</div><h1>QUINIELA NFL LEÓN</h1><b>🏈 Pronostica · Participa · Suma puntos</b>
-  <div>Entrada $${d.week.entry_fee} · Mínimo 5 · Premio $${(d.paid_count||0)*(d.week.prize_per_entry||25)}</div>
-  <div style="margin-top:8px;color:#fff;font-size:13px">💳 Pago únicamente por transferencia · 🚫 No efectivo<br>📲 Envía tu comprobante por WhatsApp y escribe <b>NFL + tu mismo nombre de registro</b></div></div>
-  <div class="c"><div class="row"><b>Jornada ${d.week.week_label}</b><span class="muted">${d.count} registrados · ${d.paid_count||0} pagos</span></div></div>
-  <div class="c"><div class="helpBtns"><button class="btn navy" onclick="showHelp('fillHelp')">📝 ¿CÓMO LLENAR LA QUINIELA?</button><button class="btn navy" onclick="showHelp('tieHelp')">🎯 ¿CÓMO FUNCIONA EL DESEMPATE?</button></div></div>
-  <div class="c"><button class="btn red" style="width:100%" onclick="showBoard()">📊 VER QUINIELA Y RESULTADOS</button></div>
-  <div id="fillHelp" class="c" style="display:none"><button class="btn navy" onclick="showHelp('fillHelp')">← Regresar</button><h3>📝 Cómo llenar la quiniela</h3>
-  <div class="game"><b>1️⃣ ELIGE QUIÉN GANA</b><br>En cada partido marca un equipo.</div>
-  <div class="game"><b>2️⃣ ELIGE TU ⭐ ESTRELLA</b><br>Escoge solo un partido. Si aciertas → <b>2 puntos</b>. Si fallas → <b>0 puntos</b>.</div>
-  <div class="game"><b>3️⃣ PON EL MARCADOR 🎯</b><br>Predice el marcador del último partido del domingo. <b>No da puntos</b>; sirve para desempatar.</div>
-  <div class="game"><b>🏆 ¿QUIÉN GANA?</b><br>Gana quien tenga más puntos. Si empatan → se usa el marcador y después los aciertos.</div></div>
-  <div id="tieHelp" class="c" style="display:none"><button class="btn navy" onclick="showHelp('tieHelp')">← Regresar</button><h3>🎯 Cómo funciona el desempate</h3>
-  <p>Ejemplo: resultado real <b>Steelers 24 – 20 Packers</b>.</p>
-  <div class="game">Jugador A: <b>27 – 17</b> → |27−24| + |17−20| = <b>6</b></div>
-  <div class="game">Jugador B: <b>23 – 21</b> → |23−24| + |21−20| = <b>2</b></div>
-  <p>El número <b>MÁS BAJO</b> gana el desempate.</p><ol><li>Mayor cantidad de puntos</li><li>Menor diferencia del marcador</li><li>Mayor cantidad de aciertos</li><li>Super Bowl: color de Gatorade 🥤</li></ol>
-  <div class="muted">El marcador de desempate NO otorga puntos.</div></div>
-  <form id="entryForm"><div class="c"><b>Nombre</b><input class="input" id="name" required placeholder="Escribe tu nombre"></div>`;
-  d.games.forEach((g,i)=>h+=`<div class="game"><b>${i+1}. ${g.away_abbr} vs ${g.home_abbr}</b><div class="matchup">
-  <div class="teamSide"><span class="sideTag visitor">VISITANTE</span><img class="teamLogo" src="${teamLogo(g.away_abbr)}" alt="${g.away_team}" onerror="this.style.display='none'"><div class="teamAbbr">${g.away_abbr}</div><div class="teamName">${g.away_team}</div><label class="pick"><input type="radio" name="g${g.id}" value="${g.away_abbr}" required> ${g.away_abbr}</label></div>
-  <div class="vs">VS</div>
-  <div class="teamSide"><span class="sideTag local">LOCAL</span><img class="teamLogo" src="${teamLogo(g.home_abbr)}" alt="${g.home_team}" onerror="this.style.display='none'"><div class="teamAbbr">${g.home_abbr}</div><div class="teamName">${g.home_team}</div><label class="pick"><input type="radio" name="g${g.id}" value="${g.home_abbr}" required> ${g.home_abbr}</label></div>
-  </div><label class="pick starPick">⭐ <input type="radio" name="s" value="${g.id}" required> Estrella (2 puntos)</label></div>`);
-  h+=`<div class="c"><b>Desempate: marcador del último partido del domingo</b><div class="muted">Predice el marcador exacto; solo se usa para desempatar.</div><div class="row"><div style="width:48%"><span class="tieLabel">Equipo visitante</span><input class="input" style="width:100%" type="number" id="tba" min="0" required placeholder="Puntos visitante"></div><div style="width:48%"><span class="tieLabel">Equipo local</span><input class="input" style="width:100%" type="number" id="tbh" min="0" required placeholder="Puntos local"></div></div></div>
-  <div class="c" id="gatoradeBox" style="display:${d.week.phase==="super_bowl"?"block":"none"}"><b>🥤 Desempate final — Gatorade</b><select class="input" id="gatorade"><option value="">Selecciona color</option><option>Naranja</option><option>Amarillo</option><option>Azul</option><option>Verde</option><option>Rojo</option><option>Morado</option><option>Otro</option></select></div>
-  <div id="submitMsg"></div><button class="btn red" style="width:100%">ENVIAR QUINIELA</button></form><div class="c"><a href="admin.html">Acceso administradora</a></div>`;
-  app.innerHTML=h;
-  document.getElementById("entryForm").onsubmit=async ev=>{
-   ev.preventDefault();
-   const picks={}; d.games.forEach(g=>picks[g.id]=document.querySelector(`input[name="g${g.id}"]:checked`).value);
-   try{
-   const nameEl=document.getElementById("name"), tbaEl=document.getElementById("tba"), tbhEl=document.getElementById("tbh"), gatoradeEl=document.getElementById("gatorade");
-   const participantName=(nameEl?.value||"").trim();
-   if(!participantName) throw Error("Escribe tu nombre.");
-   const sent=await api("/entry",{method:"POST",body:JSON.stringify({week_id:d.week.id,name:participantName,picks,star_game_id:document.querySelector('input[name="s"]:checked').value,tiebreaker_away_points:+tbaEl.value,tiebreaker_home_points:+tbhEl.value,tiebreaker_points:+tbaEl.value + +tbhEl.value,gatorade_color:d.week.phase==="super_bowl"?(gatoradeEl?.value||null):null})});
-   activeEntryId=sent.entry_id;
-   app.innerHTML=`<div class="c" style="text-align:center"><div style="font-size:42px">✅</div><h2>¡QUINIELA ENVIADA!</h2><p>Tu quiniela quedó registrada correctamente.</p><div class="game"><b>Nombre:</b> ${participantName}<br><b>Folio:</b> ${sent.entry_id}</div><p><b>Pago pendiente de confirmación.</b></p><p>Realiza tu transferencia y envía el comprobante por WhatsApp escribiendo <b>NFL + el mismo nombre registrado</b>.</p><button class="btn navy" style="width:100%" onclick="showBoard()">📊 VER QUINIELA Y RESULTADOS</button></div>`;
-  }catch(err){
-   const m=document.getElementById("submitMsg");
-   if(m)m.innerHTML=`<div class="game" style="color:#991b1b"><b>⚠️ No se pudo enviar:</b> ${err.message}</div>`;
-   else alert(err.message);
-  }
-  };
-  startRealtime(d.week.id);
- }catch(e){app.innerHTML='<div class="c">'+e.message+'</div>'}
+  try{
+    const d=await api("/week");
+    let h=`<div class="h"><div class="logo">NFL</div><h1>QUINIELA NFL LEÓN</h1>
+      <b>🏈 Pronostica · Participa · Suma puntos</b>
+      <div>Entrada $${d.week.entry_fee} · Mínimo 5 · Premio $${(d.paid_count||0)*(d.week.prize_per_entry||25)}</div>
+      <div style="margin-top:8px;font-size:13px">💳 Pago únicamente por transferencia · 🚫 No efectivo<br>📲 Envía tu comprobante por WhatsApp y escribe <b>NFL + tu mismo nombre de registro</b></div></div>
+      <div class="c"><div class="row"><b>Jornada ${d.week.week_label}</b><span class="muted">${d.count} registrados · ${d.paid_count||0} pagos</span></div></div>
+      <div class="c"><div class="helpBtns"><button class="btn navy" type="button" onclick="toggleHelp('fillHelp')">📝 ¿CÓMO LLENAR LA QUINIELA?</button><button class="btn navy" type="button" onclick="toggleHelp('tieHelp')">🎯 ¿CÓMO FUNCIONA EL DESEMPATE?</button></div></div>
+      <div class="c"><button class="btn red" style="width:100%" type="button" onclick="showBoard()">📊 VER QUINIELA Y RESULTADOS</button></div>
+      <div id="fillHelp" class="c" style="display:none"><button class="btn navy" type="button" onclick="toggleHelp('fillHelp')">← Regresar</button><h3>📝 Cómo llenar la quiniela</h3>
+      <div class="game"><b>1️⃣ ELIGE QUIÉN GANA</b><br>En cada partido marca un equipo.</div>
+      <div class="game"><b>2️⃣ ELIGE TU ⭐ ESTRELLA</b><br>Escoge solo un partido. Si aciertas → <b>2 puntos</b>. Si fallas → <b>0 puntos</b>.</div>
+      <div class="game"><b>3️⃣ PON EL MARCADOR 🎯</b><br>Predice el marcador del último partido del domingo. No da puntos; sirve para desempatar.</div></div>
+      <div id="tieHelp" class="c" style="display:none"><button class="btn navy" type="button" onclick="toggleHelp('tieHelp')">← Regresar</button><h3>🎯 Cómo funciona el desempate</h3>
+      <p>Primero se comparan puntos, después la diferencia del marcador y después los aciertos.</p><div class="muted">El marcador de desempate NO otorga puntos.</div></div>
+      <form id="entryForm"><div class="c"><b>Nombre</b><input class="input" id="name" required placeholder="Escribe tu nombre"></div>`;
+
+    d.games.forEach((g,i)=>{
+      h+=`<div class="game"><b>${i+1}. ${esc(g.away_abbr)} vs ${esc(g.home_abbr)}</b><div class="matchup">
+        <div class="teamSide"><span class="sideTag visitor">VISITANTE</span><img class="teamLogo" src="${teamLogo(g.away_abbr)}" alt="${esc(g.away_team)}" onerror="this.style.display='none'"><div class="teamAbbr">${esc(g.away_abbr)}</div><div class="teamName">${esc(g.away_team)}</div><label class="pick"><input type="radio" name="g${g.id}" value="${esc(g.away_abbr)}" required> ${esc(g.away_abbr)}</label></div>
+        <div class="vs">VS</div>
+        <div class="teamSide"><span class="sideTag local">LOCAL</span><img class="teamLogo" src="${teamLogo(g.home_abbr)}" alt="${esc(g.home_team)}" onerror="this.style.display='none'"><div class="teamAbbr">${esc(g.home_abbr)}</div><div class="teamName">${esc(g.home_team)}</div><label class="pick"><input type="radio" name="g${g.id}" value="${esc(g.home_abbr)}" required> ${esc(g.home_abbr)}</label></div>
+        </div><label class="pick">⭐ <input type="radio" name="s" value="${g.id}" required> Estrella (2 puntos)</label></div>`;
+    });
+
+    h+=`<div class="c"><b>Desempate: marcador del último partido del domingo</b><div class="muted">Predice el marcador exacto; solo se usa para desempatar.</div>
+      <div class="row"><div style="width:48%"><span class="tieLabel">Equipo visitante</span><input class="input" id="tba" type="number" min="0" required placeholder="Puntos visitante"></div>
+      <div style="width:48%"><span class="tieLabel">Equipo local</span><input class="input" id="tbh" type="number" min="0" required placeholder="Puntos local"></div></div></div>
+      <div class="c" id="gatoradeBox" style="display:${d.week.phase==="super_bowl"?"block":"none"}"><b>🥤 Desempate final — Gatorade</b><select class="input" id="gatorade"><option value="">Selecciona color</option><option>Naranja</option><option>Amarillo</option><option>Azul</option><option>Verde</option><option>Rojo</option><option>Morado</option><option>Otro</option></select></div>
+      <div id="submitMsg" class="submitMsg"></div><button class="btn red" style="width:100%" type="submit">ENVIAR QUINIELA</button></form>
+      <div class="c"><a href="admin.html">Acceso administradora</a></div>`;
+    app.innerHTML=h;
+
+    document.getElementById("entryForm").onsubmit=async ev=>{
+      ev.preventDefault();
+      const msg=document.getElementById("submitMsg");
+      msg.innerHTML='<div class="game">⏳ Enviando quiniela...</div>';
+      try{
+        const picks={};
+        d.games.forEach(g=>{
+          const el=document.querySelector(`input[name="g${g.id}"]:checked`);
+          if(!el)throw new Error("Falta seleccionar un ganador.");
+          picks[g.id]=el.value;
+        });
+        const name=(document.getElementById("name").value||"").trim();
+        if(!name)throw new Error("Escribe tu nombre.");
+        const star=document.querySelector('input[name="s"]:checked');
+        if(!star)throw new Error("Selecciona una Estrella.");
+        const tba=Number(document.getElementById("tba").value),tbh=Number(document.getElementById("tbh").value);
+        if(!Number.isInteger(tba)||tba<0||!Number.isInteger(tbh)||tbh<0)throw new Error("El marcador de desempate no es válido.");
+        const gat=document.getElementById("gatorade");
+        const sent=await api("/entry",{method:"POST",body:JSON.stringify({
+          week_id:d.week.id,name,picks,star_game_id:star.value,
+          tiebreaker_away_points:tba,tiebreaker_home_points:tbh,tiebreaker_points:tba+tbh,
+          gatorade_color:d.week.phase==="super_bowl"?(gat?.value||null):null
+        })});
+        activeEntryId=sent.entry_id;
+        app.innerHTML=`<div class="c success" style="text-align:center"><div style="font-size:44px">✅</div><h2>¡QUINIELA ENVIADA!</h2>
+          <p>Tu quiniela quedó registrada correctamente.</p><div class="game"><b>Nombre:</b> ${esc(name)}<br><b>Folio:</b> ${esc(sent.entry_id)}</div>
+          <p><b>Pago pendiente de confirmación.</b></p><p>Realiza tu transferencia y envía el comprobante por WhatsApp escribiendo <b>NFL + el mismo nombre registrado</b>.</p>
+          <button class="btn navy" style="width:100%" onclick="showBoard()">📊 VER QUINIELA Y RESULTADOS</button></div>`;
+      }catch(err){
+        msg.innerHTML=`<div class="game error"><b>⚠️ No se pudo enviar:</b> ${esc(err.message)}<div class="muted" style="margin-top:6px">Si el mensaje es “Failed to fetch”, la comunicación del navegador con la función estaba siendo bloqueada; esta versión evita ese preflight.</div></div>`;
+      }
+    };
+  }catch(e){app.innerHTML=`<div class="c error">${esc(e.message)}</div>`}
 }
 
-function startRealtime(weekId){
- try{
-  if(realtimeChannel)realtimeChannel.unsubscribe();
-  const sb=supabase.createClient("https://picivrqgmckrwutarhyw.supabase.co","sb_publishable_SK8XBpzn3b5Dr-qa2rO7Nw_un7KbvCl");
-  realtimeChannel=sb.channel("quiniela-resultados-"+weekId).on("postgres_changes",{event:"UPDATE",schema:"public",table:"nfl_quiniela_games",filter:"week_id=eq."+weekId},async()=>{
-   try{if(document.getElementById("boardTable")){const x=await api("/board");renderBoard(x)}else if(activeEntryId){const x=await api("/entry?id="+encodeURIComponent(activeEntryId));renderMyEntry(x)}}catch(_){}
-  }).subscribe();
- }catch(_){}
+function toggleHelp(id){const x=document.getElementById(id);if(x)x.style.display=x.style.display==="none"?"block":"none"}
+
+async function showBoard(){
+  try{renderBoard(await api("/board"))}catch(e){alert(e.message)}
 }
-
-window.showBoard=async function(){try{renderBoard(await api("/board"))}catch(e){alert(e.message)}};
-window.refreshGeneralBoard=async function(){try{renderBoard(await api("/board"));const m=document.getElementById("boardMsg");if(m)m.textContent="🏆 TABLA GENERAL ACTUALIZADA"}catch(e){alert(e.message)}};
-window.showWinnerTable=function(){
- api("/board").then(x=>{
-  const r=x.ranking||[], wid=x.winner_entry_id;
-  let h='<div class="c"><button class="btn navy" onclick="showBoard()">← Regresar</button><h2>🥇 GANADOR</h2>';
-  if(!wid)h+=`<div class="muted">Ganador oficial pendiente de cierre.</div><div style="margin-top:8px"><b>Premio acumulado:</b> $${(x.ranking.length||0)*(x.week.prize_per_entry||25)}</div>`;
-  h+='<table class="table"><tr><th>#</th><th>Nombre</th><th>Estrella</th><th>Puntos</th><th>Desempate</th><th>Aciertos</th><th>Premio</th></tr>';
-  r.forEach((e,i)=>h+=`<tr class="${e.id===wid?'winnerRow':''}"><td>${i+1}</td><td><b>${e.participant_name}</b>${e.id===wid?' <span class="winnerBadge">🏆 GANADOR</span>':''}</td><td>${e.star_points>0?'⭐':'—'}</td><td>${e.total_points}</td><td>${e.score_distance===999999?'—':e.score_distance}</td><td>${e.correct_picks}</td><td>${e.id===wid?'$'+((x.paid_count||0)*(x.week.prize_per_entry||25)):'—'}</td></tr>`);
-  h+='</table></div>';app.innerHTML=h;
- }).catch(e=>alert(e.message));
-};
-window.refreshMyEntry=async function(id){try{renderMyEntry(await api("/entry?id="+encodeURIComponent(id)))}catch(e){alert(e.message)}};
-
+async function refreshBoard(){
+  try{const x=await api("/board");renderBoard(x);const m=document.getElementById("boardMsg");if(m)m.textContent="🏆 TABLA GENERAL ACTUALIZADA"}catch(e){alert(e.message)}
+}
+async function showWinner(){
+  try{
+    const x=await api("/board"),r=x.ranking||[],wid=x.winner_entry_id;
+    let h='<div class="c"><button class="btn navy" onclick="showBoard()">← Regresar</button><h2>🥇 GANADOR</h2>';
+    if(!wid)h+=`<div class="muted">Ganador oficial pendiente de cierre.</div><div style="margin-top:8px"><b>Premio acumulado:</b> $${(x.week?.prize_per_entry||25)*(x.entries||[]).filter(e=>e.payment_status==="paid").length}</div>`;
+    h+='<table class="table"><tr><th>#</th><th>Nombre</th><th>Estrella</th><th>Puntos</th><th>Desempate</th><th>Aciertos</th><th>Premio</th></tr>';
+    r.forEach((e,i)=>h+=`<tr class="${e.id===wid?"winnerRow":""}"><td>${i+1}</td><td><b>${esc(e.participant_name)}</b>${e.id===wid?' <span class="winnerBadge">🏆 GANADOR</span>':""}</td><td>${e.star_points>0?"⭐":"—"}</td><td>${e.total_points}</td><td>${e.score_distance===999999?"—":e.score_distance}</td><td>${e.correct_picks}</td><td>${e.id===wid?"$"+((x.entries||[]).filter(z=>z.payment_status==="paid").length)*(x.week?.prize_per_entry||25):"—"}</td></tr>`);
+    h+='</table></div>';app.innerHTML=h;
+  }catch(e){alert(e.message)}
+}
 function renderBoard(x){
- const gs=x.games||[], entries=x.entries||[], ranking=x.ranking||[], rankMap=new Map(ranking.map(z=>[z.id,z.rank]));
- const es=[...entries].sort((a,b)=>(rankMap.get(a.id)??999999)-(rankMap.get(b.id)??999999));
- let h='<div class="c"><button class="btn navy" onclick="location.reload()">← Regresar</button><h2>🏈 QUINIELA '+x.week.week_label+'</h2>';
- h+='<div class="row" style="margin:10px 0"><button class="btn navy" onclick="refreshGeneralBoard()">🏆 ¿VOY GANANDO?</button><button class="btn red" onclick="showWinnerTable()">🥇 GANADOR</button></div><div id="boardMsg" class="muted"></div>';
- h+='<div class="boardLegend"><span class="legend g">🟢 Acertó</span><span class="legend r">🔴 Falló</span><span class="legend p">⚪ Pendiente</span><span>☆ Estrella elegida</span><span>★ Estrella acertada</span></div><div class="boardWrap"><table id="boardTable" class="board"><thead><tr><th class="name"># Nombre</th><th class="summary">Aciertos</th>';
- gs.forEach(g=>h+=`<th><img src="${teamLogo(g.away_abbr)}" width="20" height="20" onerror="this.style.display='none'"><br>${g.away_abbr}<br>vs<br>${g.home_abbr}</th>`);
- h+='</tr></thead><tbody>';
- es.forEach((e,i)=>{const rk=rankMap.get(e.id);h+=`<tr><td class="name">${rk?rk+". ":""}${e.participant_name}</td>`;
-  gs.forEach(g=>{const done=!!g.winner_abbr,p=e.picks?.[g.id],ok=done&&p===g.winner_abbr,cls=!done?"pending":ok?"ok":"bad",star=e.star_game_id===g.id,hit=star&&ok;h+=`<td class="boardCell ${cls}">${p||"—"} ${star?`<span class="starMark ${hit?"hit":""}">${hit?"★":"☆"}</span>`:""}</td>`});
-  h+='</tr>';
- });
- h+='</tbody></table></div></div>';app.innerHTML=h;
-}
-
-function renderMyEntry(x){
- const e=x.entry,gs=x.games||[];activeEntryId=e.id;
- let h=`<div class="c"><button class="btn navy" onclick="location.reload()">← Nueva quiniela</button><h2>📋 ${e.participant_name}</h2><div class="muted">Tus resultados se actualizan conforme terminan los partidos.</div></div>`;
- gs.forEach((g,i)=>{const finished=!!g.winner_abbr,p=e.picks?.[g.id],ok=finished&&p===g.winner_abbr,cls=!finished?"pending":ok?"ok":"bad",badge=!finished?"PENDIENTE":ok?"✓ ¡ACERTASTE!":"✕ NO ACERTASTE";h+=`<div class="pickResult ${cls}"><div class="row"><b>${i+1}. ${g.away_abbr} 🆚 ${g.home_abbr}</b><span class="pickBadge">${badge}</span></div><div style="margin-top:7px">Tu elección: <b>${p}</b>${e.star_game_id===g.id?" ⭐":""}</div>${finished?`<div class="muted">Ganador real: <b>${g.winner_abbr}</b></div>`:""}</div>`});
- h+=`<div class="c"><button class="btn navy" style="width:100%" onclick="refreshMyEntry('${e.id}')">↻ ACTUALIZAR RESULTADOS</button><div class="muted" style="margin-top:8px;text-align:center">⭐ La estrella vale +1 punto extra si aciertas.</div></div>`;app.innerHTML=h;
+  const gs=x.games||[],entries=x.entries||[],ranking=x.ranking||[],rankMap=new Map(ranking.map(z=>[z.id,z.rank]));
+  const es=[...entries].sort((a,b)=>(rankMap.get(a.id)??999999)-(rankMap.get(b.id)??999999));
+  let h=`<div class="c"><button class="btn navy" onclick="location.reload()">← Regresar</button><h2>🏈 QUINIELA ${esc(x.week.week_label)}</h2>
+    <div class="row"><button class="btn navy" onclick="refreshBoard()">🏆 ¿VOY GANANDO?</button><button class="btn red" onclick="showWinner()">🥇 GANADOR</button></div>
+    <div id="boardMsg" class="muted" style="margin-top:6px"></div><div class="muted" style="margin:8px 0">🟢 Acertó · 🔴 Falló · ⚪ Pendiente · ☆ Estrella elegida · ★ Estrella acertada</div>
+    <div class="boardWrap"><table id="boardTable" class="board"><thead><tr><th class="name"># Nombre</th><th class="summary">Aciertos</th>`;
+  gs.forEach(g=>h+=`<th><img src="${teamLogo(g.away_abbr)}" width="20" height="20" onerror="this.style.display='none'"><br>${esc(g.away_abbr)}<br>vs<br>${esc(g.home_abbr)}</th>`);
+  h+='</tr></thead><tbody>';
+  es.forEach(e=>{
+    const rk=rankMap.get(e.id);h+=`<tr><td class="name">${rk?rk+". ":""}${esc(e.participant_name)}</td><td class="summary">${e.correct_picks??0}</td>`;
+    gs.forEach(g=>{
+      const done=!!g.winner_abbr,p=e.picks?.[g.id],ok=done&&p===g.winner_abbr,cls=!done?"pending":ok?"ok":"bad",star=e.star_game_id===g.id,hit=star&&ok;
+      h+=`<td class="boardCell ${cls}">${esc(p||"—")} ${star?`<span class="starMark ${hit?"hit":""}">${hit?"★":"☆"}</span>`:""}</td>`;
+    });h+='</tr>';
+  });
+  h+='</tbody></table></div></div>';app.innerHTML=h;
 }
 load();
 </script>
