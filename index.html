@@ -57,6 +57,11 @@ async function api(path,options={}){
 
 let activeEntryId=null, realtimeChannel=null;
 
+function startNewEntry(){
+  history.replaceState({},document.title,location.pathname);
+  load();
+}
+
 function teamLogo(a){
   const m={LA:"lar",LAR:"lar",WAS:"wsh",WSH:"wsh",JAC:"jax",JAX:"jax",OAK:"lv",LV:"lv",SD:"lac",LAC:"lac",STL:"lar"};
   return "https://a.espncdn.com/i/teamlogos/nfl/500/"+(m[a]||a).toLowerCase()+".png";
@@ -65,8 +70,8 @@ function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&l
 
 async function load(){
   const q=new URLSearchParams(location.search);
-  if(q.get("sent")==="1"){app.innerHTML=`<div class="c success" style="text-align:center"><div style="font-size:44px">✅</div><h2>¡QUINIELA ENVIADA!</h2><p>Tu quiniela quedó registrada correctamente.</p><div class="game"><b>Nombre:</b> ${esc(q.get("name"))}<br><b>Folio:</b> ${esc(q.get("folio"))}</div><p><b>Pago pendiente de confirmación.</b></p><p>Realiza tu transferencia y envía el comprobante por WhatsApp escribiendo <b>NFL + el mismo nombre registrado</b>.</p><button class="btn navy" style="width:100%" onclick="history.replaceState({},"",location.pathname);load()">↩️ NUEVA QUINIELA</button></div>`; return;}
-  if(q.get("send_error")){app.innerHTML=`<div class="c error"><h2>⚠️ No se pudo enviar</h2><p>${esc(q.get("send_error"))}</p><button class="btn navy" style="width:100%" onclick="history.replaceState({},"",location.pathname);load()">← REGRESAR A LA QUINIELA</button></div>`; return;}
+  if(q.get("sent")==="1"){app.innerHTML=`<div class="c success" style="text-align:center"><div style="font-size:44px">✅</div><h2>¡QUINIELA ENVIADA!</h2><p>Tu quiniela quedó registrada correctamente.</p><div class="game"><b>Nombre:</b> ${esc(q.get("name"))}<br><b>Folio:</b> ${esc(q.get("folio"))}</div><p><b>Pago pendiente de confirmación.</b></p><p>Realiza tu transferencia y envía el comprobante por WhatsApp escribiendo <b>NFL + el mismo nombre registrado</b>.</p><button class="btn navy" style="width:100%" type="button" onclick="startNewEntry()">↩️ NUEVA QUINIELA</button></div>`; return;}
+  if(q.get("send_error")){app.innerHTML=`<div class="c error"><h2>⚠️ No se pudo enviar</h2><p>${esc(q.get("send_error"))}</p><button class="btn navy" style="width:100%" type="button" onclick="startNewEntry()">← REGRESAR A LA QUINIELA</button></div>`; return;}
   try{
     const d=await api("/week");
     let h=`<div class="h"><div class="logo">NFL</div><h1>QUINIELA NFL LEÓN</h1>
