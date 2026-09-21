@@ -11,7 +11,7 @@ body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;margin:0;background
 .w{max-width:760px;margin:auto;padding:12px}.h{background:linear-gradient(135deg,var(--n),#061b33);color:#fff;padding:20px;border-radius:18px;border:2px solid var(--s);text-align:center}
 .logo{width:68px;height:78px;margin:auto auto 7px;border:4px solid #fff;display:grid;place-items:center;font-weight:1000;font-size:20px;color:var(--r);background:#fff;clip-path:polygon(50% 0,100% 18%,94% 78%,50% 100%,6% 78%,0 18%)}
 h1{margin:4px 0;font-size:29px}.c{background:#fff;padding:14px;margin:10px 0;border-radius:14px;border:1px solid #d7dce2}
-.game,.entry{border:1px solid #d7dce2;border-radius:12px;padding:10px;margin:8px 0}.input{padding:11px;border:1px solid #ccd3da;border-radius:9px;font-size:16px;width:100%}
+.game,.entry{border:1px solid #d7dce2;border-radius:14px;padding:12px;margin:8px 0}.matchup{display:grid;grid-template-columns:1fr 48px 1fr;gap:8px;align-items:center;margin-top:8px}.teamSide{text-align:center;min-width:0}.sideTag{display:inline-block;padding:4px 12px;border-radius:8px;font-size:12px;font-weight:900;letter-spacing:.3px;margin-bottom:7px}.visitor{background:#dbe1e7;color:#1e334b}.local{background:#f0c94b;color:#17263a}.teamLogo{width:58px;height:58px;object-fit:contain;display:block;margin:0 auto 4px}.teamAbbr{font-size:19px;font-weight:950}.teamName{font-size:13px;color:#667381;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs{font-weight:1000;color:#718096;font-size:20px;text-align:center}.pick{display:block;text-align:center;margin-top:8px;font-size:16px}.starPick{margin-top:7px}.tieLabel{font-size:13px;font-weight:800;color:#20324a;margin-bottom:4px;display:block}.input{padding:11px;border:1px solid #ccd3da;border-radius:9px;font-size:16px;width:100%}
 .btn{padding:11px 14px;border:0;border-radius:10px;font-weight:900;cursor:pointer;min-height:44px}.red{background:var(--r);color:#fff}.navy{background:var(--n);color:#fff}
 .row{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}.muted{color:#667381;font-size:13px}
 .helpBtns{display:grid;grid-template-columns:1fr 1fr;gap:8px}.table{width:100%;border-collapse:collapse}.table td,.table th{padding:8px;border-bottom:1px solid #e2e6ea;text-align:left;font-size:14px}
@@ -24,7 +24,7 @@ h1{margin:4px 0;font-size:29px}.c{background:#fff;padding:14px;margin:10px 0;bor
 .pickBadge{display:inline-block;font-weight:900;border-radius:999px;padding:4px 9px;font-size:12px}.ok .pickBadge{background:#16a34a;color:#fff}.bad .pickBadge{background:#dc2626;color:#fff}.pending .pickBadge{background:#64748b;color:#fff}
 .legend{padding:5px 8px;border-radius:999px;font-weight:800;font-size:12px}.legend.g{background:#dcfce7;color:#166534}.legend.r{background:#fee2e2;color:#991b1b}.legend.p{background:#f1f5f9;color:#64748b}
 .starMark{font-size:16px;color:#334155}.starMark.hit{color:#FFD700;text-shadow:0 0 1px #9a7600,-1px -1px 0 #fff,1px 1px 0 #b8860b;font-weight:1000}
-@media(max-width:520px){.w{padding:8px}.h{padding:15px 10px;border-radius:14px}h1{font-size:24px}.logo{width:58px;height:66px;font-size:18px}.c{padding:11px;margin:8px 0}.btn{width:100%}.helpBtns{grid-template-columns:1fr}.row .input{width:48%!important}.table{display:block;overflow-x:auto;white-space:nowrap}}
+@media(max-width:520px){.w{padding:8px}.matchup{grid-template-columns:1fr 34px 1fr;gap:3px}.teamLogo{width:50px;height:50px}.teamAbbr{font-size:17px}.teamName{font-size:12px}.sideTag{padding:3px 8px;font-size:11px}.h{padding:15px 10px;border-radius:14px}h1{font-size:24px}.logo{width:58px;height:66px;font-size:18px}.c{padding:11px;margin:8px 0}.btn{width:100%}.helpBtns{grid-template-columns:1fr}.row .input{width:48%!important}.table{display:block;overflow-x:auto;white-space:nowrap}}
 </style>
 </head>
 <body><div class="w" id="app"></div>
@@ -58,11 +58,12 @@ async function load(){
   <p>El número <b>MÁS BAJO</b> gana el desempate.</p><ol><li>Mayor cantidad de puntos</li><li>Menor diferencia del marcador</li><li>Mayor cantidad de aciertos</li><li>Super Bowl: color de Gatorade 🥤</li></ol>
   <div class="muted">El marcador de desempate NO otorga puntos.</div></div>
   <form id="entryForm"><div class="c"><b>Nombre</b><input class="input" id="name" required placeholder="Escribe tu nombre"></div>`;
-  d.games.forEach((g,i)=>h+=`<div class="game"><b>${i+1}. ${g.away_abbr} vs ${g.home_abbr}</b><div>
-  <label><input type="radio" name="g${g.id}" value="${g.away_abbr}" required> ${g.away_team}</label><br>
-  <label><input type="radio" name="g${g.id}" value="${g.home_abbr}" required> ${g.home_team}</label></div>
-  <label>⭐ <input type="radio" name="s" value="${g.id}" required> Estrella (2 puntos)</label></div>`);
-  h+=`<div class="c"><b>Desempate: marcador del último partido del domingo</b><div class="muted">Predice el marcador exacto; solo se usa para desempatar.</div><div class="row"><input class="input" style="width:48%" type="number" id="tba" min="0" required placeholder="Visitante"><input class="input" style="width:48%" type="number" id="tbh" min="0" required placeholder="Local"></div></div>
+  d.games.forEach((g,i)=>h+=`<div class="game"><b>${i+1}. ${g.away_abbr} vs ${g.home_abbr}</b><div class="matchup">
+  <div class="teamSide"><span class="sideTag visitor">VISITANTE</span><img class="teamLogo" src="${teamLogo(g.away_abbr)}" alt="${g.away_team}" onerror="this.style.display='none'"><div class="teamAbbr">${g.away_abbr}</div><div class="teamName">${g.away_team}</div><label class="pick"><input type="radio" name="g${g.id}" value="${g.away_abbr}" required> ${g.away_abbr}</label></div>
+  <div class="vs">VS</div>
+  <div class="teamSide"><span class="sideTag local">LOCAL</span><img class="teamLogo" src="${teamLogo(g.home_abbr)}" alt="${g.home_team}" onerror="this.style.display='none'"><div class="teamAbbr">${g.home_abbr}</div><div class="teamName">${g.home_team}</div><label class="pick"><input type="radio" name="g${g.id}" value="${g.home_abbr}" required> ${g.home_abbr}</label></div>
+  </div><label class="pick starPick">⭐ <input type="radio" name="s" value="${g.id}" required> Estrella (2 puntos)</label></div>`);
+  h+=`<div class="c"><b>Desempate: marcador del último partido del domingo</b><div class="muted">Predice el marcador exacto; solo se usa para desempatar.</div><div class="row"><div style="width:48%"><span class="tieLabel">Equipo visitante</span><input class="input" style="width:100%" type="number" id="tba" min="0" required placeholder="Puntos visitante"></div><div style="width:48%"><span class="tieLabel">Equipo local</span><input class="input" style="width:100%" type="number" id="tbh" min="0" required placeholder="Puntos local"></div></div></div>
   <div class="c" id="gatoradeBox" style="display:${d.week.phase==="super_bowl"?"block":"none"}"><b>🥤 Desempate final — Gatorade</b><select class="input" id="gatorade"><option value="">Selecciona color</option><option>Naranja</option><option>Amarillo</option><option>Azul</option><option>Verde</option><option>Rojo</option><option>Morado</option><option>Otro</option></select></div>
   <div id="submitMsg"></div><button class="btn red" style="width:100%">ENVIAR QUINIELA</button></form><div class="c"><a href="admin.html">Acceso administradora</a></div>`;
   app.innerHTML=h;
@@ -70,9 +71,12 @@ async function load(){
    ev.preventDefault();
    const picks={}; d.games.forEach(g=>picks[g.id]=document.querySelector(`input[name="g${g.id}"]:checked`).value);
    try{
-   const sent=await api("/entry",{method:"POST",body:JSON.stringify({week_id:d.week.id,name:name.value.trim(),picks,star_game_id:document.querySelector('input[name="s"]:checked').value,tiebreaker_away_points:+tba.value,tiebreaker_home_points:+tbh.value,tiebreaker_points:+tba.value + +tbh.value,gatorade_color:d.week.phase==="super_bowl"?gatorade.value:null})});
+   const nameEl=document.getElementById("name"), tbaEl=document.getElementById("tba"), tbhEl=document.getElementById("tbh"), gatoradeEl=document.getElementById("gatorade");
+   const participantName=(nameEl?.value||"").trim();
+   if(!participantName) throw Error("Escribe tu nombre.");
+   const sent=await api("/entry",{method:"POST",body:JSON.stringify({week_id:d.week.id,name:participantName,picks,star_game_id:document.querySelector('input[name="s"]:checked').value,tiebreaker_away_points:+tbaEl.value,tiebreaker_home_points:+tbhEl.value,tiebreaker_points:+tbaEl.value + +tbhEl.value,gatorade_color:d.week.phase==="super_bowl"?(gatoradeEl?.value||null):null})});
    activeEntryId=sent.entry_id;
-   app.innerHTML=`<div class="c" style="text-align:center"><div style="font-size:42px">✅</div><h2>¡QUINIELA ENVIADA!</h2><p>Tu quiniela quedó registrada correctamente.</p><div class="game"><b>Nombre:</b> ${name.value.trim()}<br><b>Folio:</b> ${sent.entry_id}</div><p><b>Pago pendiente de confirmación.</b></p><p>Realiza tu transferencia y envía el comprobante por WhatsApp escribiendo <b>NFL + el mismo nombre registrado</b>.</p><button class="btn navy" style="width:100%" onclick="showBoard()">📊 VER QUINIELA Y RESULTADOS</button></div>`;
+   app.innerHTML=`<div class="c" style="text-align:center"><div style="font-size:42px">✅</div><h2>¡QUINIELA ENVIADA!</h2><p>Tu quiniela quedó registrada correctamente.</p><div class="game"><b>Nombre:</b> ${participantName}<br><b>Folio:</b> ${sent.entry_id}</div><p><b>Pago pendiente de confirmación.</b></p><p>Realiza tu transferencia y envía el comprobante por WhatsApp escribiendo <b>NFL + el mismo nombre registrado</b>.</p><button class="btn navy" style="width:100%" onclick="showBoard()">📊 VER QUINIELA Y RESULTADOS</button></div>`;
   }catch(err){
    const m=document.getElementById("submitMsg");
    if(m)m.innerHTML=`<div class="game" style="color:#991b1b"><b>⚠️ No se pudo enviar:</b> ${err.message}</div>`;
@@ -101,7 +105,7 @@ window.showWinnerTable=function(){
   let h='<div class="c"><button class="btn navy" onclick="showBoard()">← Regresar</button><h2>🥇 GANADOR</h2>';
   if(!wid)h+=`<div class="muted">Ganador oficial pendiente de cierre.</div><div style="margin-top:8px"><b>Premio acumulado:</b> $${(x.ranking.length||0)*(x.week.prize_per_entry||25)}</div>`;
   h+='<table class="table"><tr><th>#</th><th>Nombre</th><th>Estrella</th><th>Puntos</th><th>Desempate</th><th>Aciertos</th><th>Premio</th></tr>';
-  r.forEach((e,i)=>h+=`<tr class="${e.id===wid?'winnerRow':''}"><td>${i+1}</td><td><b>${e.participant_name}</b>${e.id===wid?' <span class="winnerBadge">🏆 GANADOR</span>':''}</td><td>${e.star_points>0?'⭐':'—'}</td><td>${e.total_points}</td><td>${e.score_distance===999999?'—':e.score_distance}</td><td>${e.correct_picks}</td></tr>`);
+  r.forEach((e,i)=>h+=`<tr class="${e.id===wid?'winnerRow':''}"><td>${i+1}</td><td><b>${e.participant_name}</b>${e.id===wid?' <span class="winnerBadge">🏆 GANADOR</span>':''}</td><td>${e.star_points>0?'⭐':'—'}</td><td>${e.total_points}</td><td>${e.score_distance===999999?'—':e.score_distance}</td><td>${e.correct_picks}</td><td>${e.id===wid?'$'+((x.paid_count||0)*(x.week.prize_per_entry||25)):'—'}</td></tr>`);
   h+='</table></div>';app.innerHTML=h;
  }).catch(e=>alert(e.message));
 };
