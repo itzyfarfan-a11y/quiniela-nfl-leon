@@ -11,7 +11,7 @@
 <body><div class="w"><div class="h"><div class="logo">NFL</div><h1>ADMIN · QUINIELA NFL LEÓN</h1></div><div class="c" id="login"><input class="input" id="pin" type="password" placeholder="Código de administradora"><button class="btn navy" style="width:100%;margin-top:8px" onclick="go()">ENTRAR</button></div><div id="app"></div></div>
 <script>
 const API_BASE="https://picivrqgmckrwutarhyw.supabase.co/functions/v1/nfl-quiniela";
-const api=(p,o)=>fetch(API_BASE+p,Object.assign({headers:{"Content-Type":"application/json"}},o||{})).then(async r=>{const x=await r.json();if(!r.ok)throw Error(x.error||"Error");return x});
+const api=(p,o={})=>{const opts={...o};opts.headers={...(o.headers||{})};if((opts.method||"GET").toUpperCase()!=="GET")opts.headers["Content-Type"]="application/json";return fetch(API_BASE+p,opts).then(async r=>{const x=await r.json();if(!r.ok)throw Error(x.error||"Error");return x});};
 let P="";
 async function go(){P=pin.value;try{await load();login.style.display="none"}catch(e){alert("Código incorrecto")}}
 async function load(){

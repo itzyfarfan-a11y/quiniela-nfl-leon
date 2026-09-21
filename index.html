@@ -31,7 +31,7 @@ h1{margin:4px 0;font-size:29px}.c{background:#fff;padding:14px;margin:10px 0;bor
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const API_BASE="https://picivrqgmckrwutarhyw.supabase.co/functions/v1/nfl-quiniela";
-const api=(p,o)=>fetch(API_BASE+p,Object.assign({headers:{"Content-Type":"application/json"}},o||{})).then(async r=>{const x=await r.json();if(!r.ok)throw Error(x.error||"Error");return x});
+const api=(p,o={})=>{const opts={...o};opts.headers={...(o.headers||{})};if((opts.method||"GET").toUpperCase()!=="GET")opts.headers["Content-Type"]="application/json";return fetch(API_BASE+p,opts).then(async r=>{const x=await r.json();if(!r.ok)throw Error(x.error||"Error");return x});};
 let realtimeChannel=null,activeEntryId=null, currentWeekId=null;
 
 function showHelp(id){const x=document.getElementById(id);x.style.display=x.style.display==="none"?"block":"none"}
