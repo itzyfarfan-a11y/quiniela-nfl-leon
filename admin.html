@@ -117,32 +117,29 @@ async function load(){
       <button class="btn red" onclick="psync('super_bowl')">Super Bowl</button>
     </div>
   </div>
-  <div class="c"><h3>Pagos</h3><div class="muted">Toca “Confirmar pago” para registrar el pago. El premio se actualiza automáticamente.</div>`;
+  <div class="c"><h3>Pagos</h3>`;
 
   d.entries.forEach(e=>h+=`<div class="entry">
-    <div><b>${e.participant_name}</b><div>${e.total_points??0} puntos</div></div>
-    <button type="button" class="btn ${e.payment_status==="paid"?"navy":"red"}" data-payment-id="${e.id}" onclick="pay(this,'${e.id}','${e.payment_status==="paid"?"pending":"paid"}')">
-      ${e.payment_status==="paid"?"Pagado ✓":"Confirmar pago"}
+    <div><b>${e.participant_name}</b><div>${e.total_points??0} puntos</div>
+    <div class="muted">${e.payment_status==="paid"?"Pago confirmado ✓":"Pago pendiente"}</div></div>
+    <button class="btn ${e.payment_status==="paid"?"navy":"red"}" onclick="pay('${e.id}','${e.payment_status==="paid"?"pending":"paid"}',this)">
+      ${e.payment_status==="paid"?"Pagado ✓ · Quitar aprobación":"Confirmar pago"}
     </button>
   </div>`);
 
-  h+=`</div><div class="c"><h3>Resultados</h3>`;
+  h+=`</div><div class="c"><h3>🏈 Resultados automáticos</h3>
+    <div class="autoStatus"><b>🔄 Marcadores automáticos activos</b>
+    <div class="muted" style="margin-top:6px">Los resultados se consultan automáticamente desde la fuente NFL. No necesitas capturar ganador ni marcador manualmente.</div></div>`;
 
-  d.games.forEach(g=>h+=`<div class="game">
-    <b>${g.away_abbr} vs ${g.home_abbr}</b>
-    <select class="input" id="w${g.id}">
-      <option value="">Pendiente</option>
-      <option value="${g.away_abbr}" ${g.winner_abbr===g.away_abbr?"selected":""}>${g.away_abbr} gana</option>
-      <option value="${g.home_abbr}" ${g.winner_abbr===g.home_abbr?"selected":""}>${g.home_abbr} gana</option>
-    </select>
-    <div class="row">
-      <input class="input" style="width:48%" id="a${g.id}" type="number" min="0" placeholder="Visitante" value="${g.away_score??""}">
-      <input class="input" style="width:48%" id="h${g.id}" type="number" min="0" placeholder="Local" value="${g.home_score??""}">
-    </div>
-    <button class="btn navy" onclick="res('${g.id}')">Guardar resultado</button>
-  </div>`);
+  d.games.forEach(g=>{
+    const finished=g.away_score!==null&&g.home_score!==null&&g.winner_abbr;
+    h+=`<div class="game">
+      <div class="row"><b>${g.away_abbr} vs ${g.home_abbr}</b>
+      <span class="${finished?"winnerBadge":"muted"}">${finished?`✓ ${g.away_score} - ${g.home_score} · ${g.winner_abbr}`:"⏳ Pendiente"}</span></div>
+    </div>`;
+  });
 
-  h+=`</div>`;
+  h+=`<div class="muted" style="margin-top:8px">La tabla pública se actualiza automáticamente conforme terminan los partidos. Al finalizar el último partido se calcula y publica el ganador.</div></div>`;
 
   if(d.week.phase==="super_bowl")h+=`<div class="c">
     <b>🥤 Gatorade real del Super Bowl</b>
@@ -155,7 +152,8 @@ async function load(){
   </div>`;
 
   h+=`<div class="c">
-    <button class="btn red" style="width:100%" onclick="closeWeek()">🔒 CERRAR JORNADA Y DEFINIR GANADOR</button>
+    <h3>🏆 Cierre automático</h3>
+    <div class="muted">No necesitas cerrar la jornada manualmente. Cuando termine el último partido, el sistema recalcula los puntos, determina al ganador y publica el resultado automáticamente.</div>
   </div>
   <div class="c">
     <h3>🏆 Historial y tabla general</h3>
@@ -180,33 +178,21 @@ async function load(){
   el("app").innerHTML=h;
 }
 
-async function pay(btn,id,status){
-  if(!id||!P){alert("Sesión de administradora no disponible. Vuelve a entrar.");return}
-  const original=btn?btn.textContent:"Confirmar pago";
-  if(btn){btn.disabled=true;btn.textContent="Guardando…"}
+async function pay(id,status,btn){
+  const isUndo=status==="pending";
+  const msg=isUndo
+    ? "¿Seguro que quieres quitar la aprobación de este pago?\n\nEl registro NO se elimina; volverá a quedar como pendiente y dejará de contar para el premio."
+    : "¿Confirmar que este participante ya realizó el pago?\n\nUna vez confirmado, contará para el premio.";
+  if(!confirm(msg))return;
+  const original=btn?.textContent||"";
+  if(btn){btn.disabled=true;btn.textContent=isUndo?"Quitando…":"Guardando…";}
   try{
-    const r=await api("/admin/payment",{method:"POST",body:{pin:P,id,status}});
-    if(!r||r.ok!==true)throw Error("El servidor no confirmó el pago.");
+    await api("/admin/payment",{method:"POST",body:JSON.stringify({pin:P,id,status})});
     await load();
-    alert(status==="paid"?"✅ Pago confirmado correctamente.":"↩️ Pago cambiado a pendiente.");
   }catch(e){
-    if(btn){btn.disabled=false;btn.textContent=original}
-    alert("⚠️ No se pudo actualizar el pago: "+(e?.message||e));
+    if(btn){btn.disabled=false;btn.textContent=original;}
+    alert("⚠️ No se pudo actualizar el pago: "+(e.message||e));
   }
-}
-
-async function res(id){
-  const winner=el("w"+id).value;
-  if(!winner){alert("Selecciona quién ganó.");return}
-  await api("/admin/result",{
-    method:"POST",
-    body:JSON.stringify({
-      pin:P,id,winner_abbr:winner,total_points:null,
-      away_score:el("a"+id).value===""?null:+el("a"+id).value,
-      home_score:el("h"+id).value===""?null:+el("h"+id).value
-    })
-  });
-  await load();
 }
 
 async function refresh(){
@@ -231,12 +217,6 @@ async function psync(stage){
   await load();
 }
 
-async function closeWeek(){
-  if(!confirm("¿Cerrar esta jornada y guardar oficialmente al ganador?"))return;
-  const d=await api("/admin/close",{method:"POST",body:JSON.stringify({pin:P})});
-  alert(d.winner?"Ganador: "+d.winner.participant_name+" · "+d.winner.total_points+" puntos":"No hay ganador todavía");
-  await load();
-}
 
 async function hist(){
   const d=await api("/admin/history",{method:"POST",body:JSON.stringify({pin:P})});
