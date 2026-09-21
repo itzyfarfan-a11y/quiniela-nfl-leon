@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Admin Quiniela NFL León · v68</title>
+<title>Admin Quiniela NFL León · v72</title>
 <style>
 :root{--n:#013369;--r:#d50a0a;--s:#c9cdd2}
 *{box-sizing:border-box}
@@ -23,7 +23,7 @@ h1{margin:4px 0;font-size:27px}
 .table{width:100%;border-collapse:collapse}
 .table td,.table th{padding:8px;border-bottom:1px solid #e2e6ea;text-align:left;font-size:14px}
 .winnerRow{background:rgba(34,197,94,.25)!important;font-weight:900}
-.status{padding:10px;border-radius:10px;background:#f3f6f9;margin-top:10px;font-size:14px}
+.status{padding:10px;border-radius:10px;background:#f3f6f9;margin-top:10px;font-size:14px}.compactResults{padding:12px}.autoPill{background:#e8f5e9;color:#166534;border:1px solid #86efac;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:900}.autoGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:9px}.autoGrid>div{background:#f5f7fa;border:1px solid #e1e5e9;border-radius:9px;padding:8px;text-align:center;font-size:12px}.autoGrid b{font-size:18px;display:block}.tableWrap{overflow-x:auto}.historyBox{background:#f7f9fb;border-radius:10px;padding:10px;margin-top:10px}.historyBox hr{border:0;border-top:1px solid #dfe4e8;margin:10px 0}@media(max-width:600px){.autoGrid{grid-template-columns:repeat(3,1fr)}.autoGrid>div{padding:6px 3px}.autoGrid span{display:block}.tableWrap{margin-left:-2px;margin-right:-2px}}
 @media(max-width:600px){
 .w{padding:8px}.btn{width:100%}.row .input{width:48%!important}
 .table{display:block;overflow-x:auto;white-space:nowrap}
@@ -127,19 +127,17 @@ async function load(){
     </button>
   </div>`);
 
-  h+=`</div><div class="c"><h3>🏈 Resultados automáticos</h3>
-    <div class="autoStatus"><b>🔄 Marcadores automáticos activos</b>
-    <div class="muted" style="margin-top:6px">Los resultados se consultan automáticamente desde la fuente NFL. No necesitas capturar ganador ni marcador manualmente.</div></div>`;
-
-  d.games.forEach(g=>{
-    const finished=g.away_score!==null&&g.home_score!==null&&g.winner_abbr;
-    h+=`<div class="game">
-      <div class="row"><b>${g.away_abbr} vs ${g.home_abbr}</b>
-      <span class="${finished?"winnerBadge":"muted"}">${finished?`✓ ${g.away_score} - ${g.home_score} · ${g.winner_abbr}`:"⏳ Pendiente"}</span></div>
-    </div>`;
-  });
-
-  h+=`<div class="muted" style="margin-top:8px">La tabla pública se actualiza automáticamente conforme terminan los partidos. Al finalizar el último partido se calcula y publica el ganador.</div></div>`;
+  const finishedGames=(d.games||[]).filter(g=>g.away_score!==null&&g.home_score!==null&&g.winner_abbr).length;
+  const totalGames=(d.games||[]).length;
+  h+=`</div><div class="c compactResults">
+    <div class="row"><h3 style="margin:0">🏈 Resultados NFL automáticos</h3><span class="autoPill">🔄 AUTOMÁTICO</span></div>
+    <div class="autoGrid">
+      <div><b>${finishedGames}</b><span> terminados</span></div>
+      <div><b>${totalGames-finishedGames}</b><span> pendientes</span></div>
+      <div><b>${totalGames}</b><span> partidos</span></div>
+    </div>
+    <div class="muted" style="margin-top:7px">No captures marcadores ni ganadores. Se sincronizan automáticamente y la tabla se recalcula sola.</div>
+  </div>`;
 
   if(d.week.phase==="super_bowl")h+=`<div class="c">
     <b>🥤 Gatorade real del Super Bowl</b>
@@ -152,18 +150,9 @@ async function load(){
   </div>`;
 
   h+=`<div class="c">
-    <h3>🏆 Cierre automático</h3>
-    <div class="muted">No necesitas cerrar la jornada manualmente. Cuando termine el último partido, el sistema recalcula los puntos, determina al ganador y publica el resultado automáticamente.</div>
-  </div>
-  <div class="c">
-    <h3>🏆 Historial y tabla general</h3>
-    <button class="btn navy" onclick="hist()">Ver historial</button>
-    <div id="history"></div>
-  </div>
-  <div class="c">
-    <h3>Tabla de posiciones</h3>
-    <div class="muted">Orden: puntos totales → desempate → aciertos</div>
-    <table class="table">
+    <h3 style="margin-top:0">📊 Tabla de posiciones</h3>
+    <div class="muted" style="margin-bottom:7px">Orden: puntos totales → desempate → aciertos</div>
+    <div class="tableWrap"><table class="table">
       <tr><th>#</th><th>Nombre</th><th>Aciertos</th><th>Puntos</th><th>Desempate</th><th>Pago</th></tr>`;
 
   d.entries.forEach((e,i)=>h+=`<tr>
@@ -174,7 +163,12 @@ async function load(){
     <td>${e.payment_status}</td>
   </tr>`);
 
-  h+=`</table></div>`;
+  h+=`</table></div></div>
+  <div class="c">
+    <h3 style="margin-top:0">🏆 Historial y tabla general</h3>
+    <button class="btn navy" id="historyBtn" onclick="hist()">Ver historial</button>
+    <div id="history" style="margin-top:10px"></div>
+  </div>`;
   el("app").innerHTML=h;
 }
 
@@ -219,12 +213,25 @@ async function psync(stage){
 
 
 async function hist(){
-  const d=await api("/admin/history",{method:"POST",body:JSON.stringify({pin:P})});
-  let h="<b>Ganadores anteriores</b>";
-  (d.winners||[]).forEach(w=>h+=`<div>${w.participant_name} · ${w.total_points} pts · $${w.prize}</div>`);
-  h+="<hr><b>Tabla general acumulada</b>";
-  (d.general||[]).forEach((x,i)=>h+=`<div>${i+1}. ${x.name} — ${x.points} pts · ${x.weeks} jornadas</div>`);
-  el("history").innerHTML=h;
+  const box=el("history"),btn=el("historyBtn");
+  if(!box)return;
+  box.innerHTML='<div class="status">Cargando historial…</div>';
+  if(btn){btn.disabled=true;btn.textContent="Cargando…";}
+  try{
+    const d=await api("/admin/history",{method:"POST",body:JSON.stringify({pin:P})});
+    let h='<div class="historyBox"><b>Ganadores anteriores</b>';
+    if(!(d.winners||[]).length)h+='<div class="muted" style="margin-top:6px">Todavía no hay jornadas terminadas.</div>';
+    (d.winners||[]).forEach(w=>h+=`<div style="margin-top:6px">🏆 ${w.participant_name} · ${w.total_points} pts · $${w.prize}</div>`);
+    h+='<hr><b>Tabla general acumulada</b>';
+    if(!(d.general||[]).length)h+='<div class="muted" style="margin-top:6px">Sin participantes con pago confirmado todavía.</div>';
+    (d.general||[]).forEach((x,i)=>h+=`<div style="margin-top:6px">${i+1}. ${x.name} — ${x.points} pts · ${x.weeks} jornadas</div>`);
+    h+='</div>';
+    box.innerHTML=h;
+  }catch(e){
+    box.innerHTML=`<div class="status" style="color:#b91c1c">⚠️ No se pudo cargar el historial: ${e.message||e}</div>`;
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent="Ver historial";}
+  }
 }
 </script>
 </body>
