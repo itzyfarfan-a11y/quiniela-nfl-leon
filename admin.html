@@ -54,10 +54,19 @@ function el(id){return document.getElementById(id)}
 
 async function api(path,options={}){
   const opts={...options};
+  const method=(opts.method||"GET").toUpperCase();
   opts.headers={...(options.headers||{})};
-  if((opts.method||"GET").toUpperCase()!=="GET"){
-    opts.headers["Content-Type"]="application/json";
+
+  if(method!=="GET" && opts.body && typeof opts.body==="object" && !(opts.body instanceof FormData) && !(opts.body instanceof URLSearchParams)){
+    opts.body=new URLSearchParams(opts.body);
   }
+
+  // Usamos application/x-www-form-urlencoded para que el POST sea una
+  // petición simple y no dispare preflight CORS desde GitHub Pages.
+  if(method!=="GET" && opts.body instanceof URLSearchParams){
+    opts.headers["Content-Type"]="application/x-www-form-urlencoded;charset=UTF-8";
+  }
+
   const r=await fetch(API_BASE+path,opts);
   let x={};
   try{x=await r.json()}catch(_){}
