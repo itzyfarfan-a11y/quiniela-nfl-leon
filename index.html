@@ -73,8 +73,6 @@ function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&l
 
 async function load(){
   stopBoardAutoRefresh();
-  stopBoardAutoRefresh();
-  stopBoardAutoRefresh();
   const q=new URLSearchParams(location.search);
   if(q.get("sent")==="1"){app.innerHTML=`<div class="c success" style="text-align:center"><div style="font-size:44px">✅</div><h2>¡QUINIELA ENVIADA!</h2><p>Tu quiniela quedó registrada correctamente.</p><div class="game"><b>Nombre:</b> ${esc(q.get("name"))}<br><b>Folio:</b> ${esc(q.get("folio"))}</div><p><b>Pago pendiente de confirmación.</b></p><p>Realiza tu transferencia y envía el comprobante por WhatsApp escribiendo <b>NFL + el mismo nombre registrado</b>.</p><button class="btn navy" style="width:100%" type="button" onclick="startNewEntry()">↩️ NUEVA QUINIELA</button></div>`; return;}
   if(q.get("send_error")){app.innerHTML=`<div class="c error"><h2>⚠️ No se pudo enviar</h2><p>${esc(q.get("send_error"))}</p><button class="btn navy" style="width:100%" type="button" onclick="startNewEntry()">← REGRESAR A LA QUINIELA</button></div>`; return;}
@@ -147,13 +145,24 @@ async function load(){
 
 function toggleHelp(id){const x=document.getElementById(id);if(x)x.style.display=x.style.display==="none"?"block":"none"}
 
-function stopBoardAutoRefresh(){if(boardRefreshTimer){clearInterval(boardRefreshTimer);boardRefreshTimer=null}}
-function startBoardAutoRefresh(){stopBoardAutoRefresh();boardRefreshTimer=setInterval(async()=>{if(boardBusy)return;boardBusy=true;try{const x=await api("/board");if(x.week?.status==="finished"&&x.winner_entry_id){stopBoardAutoRefresh();showWinnerData(x);return}renderBoard(x,true)}catch(e){}finally{boardBusy=false}},15000)}
-async function showBoard(){try{const x=await api("/board");renderBoard(x);if(x.week?.status==="finished"&&x.winner_entry_id)showWinnerData(x);else startBoardAutoRefresh()}catch(e){alert(e.message)}}
-async function refreshBoard(){try{const x=await api("/board");renderBoard(x);const m=document.getElementById("boardMsg");if(m)m.textContent="🏆 TABLA GENERAL ACTUALIZADA"}catch(e){alert(e.message)}}
-function showWinnerData(x){const r=x.ranking||[],wid=x.winner_entry_id;let h='<div class="c"><button class="btn navy" onclick="showBoard()">← Regresar</button><h2>🥇 GANADOR</h2>';if(!wid)h+=`<div class="muted">Ganador oficial pendiente de cierre.</div>`;h+='<table class="table"><tr><th>#</th><th>Nombre</th><th>Estrella</th><th>Puntos</th><th>Desempate</th><th>Aciertos</th><th>Premio</th></tr>';r.forEach((e,i)=>h+=`<tr class="${e.id===wid?"winnerRow":""}"><td>${i+1}</td><td><b>${esc(e.participant_name)}</b>${e.id===wid?' <span class="winnerBadge">🏆 GANADOR</span>':""}</td><td>${e.star_points>0?"⭐":"—"}</td><td>${e.total_points}</td><td>${e.score_distance===999999?"—":e.score_distance}</td><td>${e.correct_picks}</td><td>${e.id===wid?"$"+((x.entries||[]).filter(z=>z.payment_status==="paid").length)*(x.week?.prize_per_entry||25):"—"}</td></tr>`);h+='</table></div>';app.innerHTML=h}
-async function showWinner(){stopBoardAutoRefresh();try{showWinnerData(await api("/board"))}catch(e){alert(e.message)}}
-function renderBoard(x,live=false){
+async function showBoard(){
+  try{renderBoard(await api("/board"));startBoardAutoRefresh()}catch(e){alert(e.message)}
+}
+async function refreshBoard(){
+  try{const x=await api("/board");renderBoard(x);const m=document.getElementById("boardMsg");if(m)m.textContent="🏆 TABLA GENERAL ACTUALIZADA"}catch(e){alert(e.message)}
+}
+async function showWinner(){
+  stopBoardAutoRefresh();
+  try{
+    const x=await api("/board"),r=x.ranking||[],wid=x.winner_entry_id;
+    let h='<div class="c"><button class="btn navy" onclick="showBoard()">← Regresar</button><h2>🥇 GANADOR</h2>';
+    if(!wid)h+=`<div class="muted">Ganador oficial pendiente de cierre.</div><div style="margin-top:8px"><b>Premio acumulado:</b> $${(x.week?.prize_per_entry||25)*(x.entries||[]).filter(e=>e.payment_status==="paid").length}</div>`;
+    h+='<table class="table"><tr><th>#</th><th>Nombre</th><th>Estrella</th><th>Puntos</th><th>Desempate</th><th>Aciertos</th><th>Premio</th></tr>';
+    r.forEach((e,i)=>h+=`<tr class="${e.id===wid?"winnerRow":""}"><td>${i+1}</td><td><b>${esc(e.participant_name)}</b>${e.id===wid?' <span class="winnerBadge">🏆 GANADOR</span>':""}</td><td>${e.star_points>0?"⭐":"—"}</td><td>${e.total_points}</td><td>${e.score_distance===999999?"—":e.score_distance}</td><td>${e.correct_picks}</td><td>${e.id===wid?"$"+((x.entries||[]).filter(z=>z.payment_status==="paid").length)*(x.week?.prize_per_entry||25):"—"}</td></tr>`);
+    h+='</table></div>';app.innerHTML=h;
+  }catch(e){alert(e.message)}
+}
+function renderBoard(x){
   const gs=x.games||[],entries=x.entries||[],ranking=x.ranking||[],rankMap=new Map(ranking.map(z=>[z.id,z.rank]));
   const es=[...entries].sort((a,b)=>(rankMap.get(a.id)??999999)-(rankMap.get(b.id)??999999));
   let h=`<div class="c"><button class="btn navy" onclick="location.reload()">← Regresar</button><h2>🏈 QUINIELA ${esc(x.week.week_label)}</h2>
@@ -170,7 +179,6 @@ function renderBoard(x,live=false){
     });h+='</tr>';
   });
   h+='</tbody></table></div></div>';app.innerHTML=h;
-  if(live){const m=document.getElementById("boardMsg");if(m)m.textContent="🔄 Resultados actualizados automáticamente";}
 }
 load();
 </script>
