@@ -100,7 +100,7 @@ async function load(){
       <div class="c"><a href="admin.html">Acceso administradora</a></div>`;
     app.innerHTML=h;
 
-    document.getElementById("entryForm").onsubmit=async ev=>{
+    document.getElementById("entryForm").onsubmit=ev=>{
       ev.preventDefault();
       const msg=document.getElementById("submitMsg");
       msg.innerHTML='<div class="game">⏳ Enviando quiniela...</div>';
@@ -118,26 +118,17 @@ async function load(){
         const tba=Number(document.getElementById("tba").value),tbh=Number(document.getElementById("tbh").value);
         if(!Number.isInteger(tba)||tba<0||!Number.isInteger(tbh)||tbh<0)throw new Error("El marcador de desempate no es válido.");
         const gat=document.getElementById("gatorade");
-        const sent=await api("/entry",{method:"POST",body:JSON.stringify({
-          week_id:d.week.id,name,picks,star_game_id:star.value,
-          tiebreaker_away_points:tba,tiebreaker_home_points:tbh,tiebreaker_points:tba+tbh,
-          gatorade_color:d.week.phase==="super_bowl"?(gat?.value||null):null
-        })});
-        activeEntryId=sent.entry_id;
-        app.innerHTML=`<div class="c success" style="text-align:center"><div style="font-size:44px">✅</div><h2>¡QUINIELA ENVIADA!</h2>
-          <p>Tu quiniela quedó registrada correctamente.</p><div class="game"><b>Nombre:</b> ${esc(name)}<br><b>Folio:</b> ${esc(sent.entry_id)}</div>
-          <p><b>Pago pendiente de confirmación.</b></p><p>Realiza tu transferencia y envía el comprobante por WhatsApp escribiendo <b>NFL + el mismo nombre registrado</b>.</p>
-          <button class="btn navy" style="width:100%" onclick="showBoard()">📊 VER QUINIELA Y RESULTADOS</button></div>`;
+        const data={week_id:d.week.id,name,picks,star_game_id:star.value,tiebreaker_away_points:tba,tiebreaker_home_points:tbh,tiebreaker_points:tba+tbh,gatorade_color:d.week.phase==="super_bowl"?(gat?.value||""):""};
+        const form=document.createElement("form");
+        form.method="POST";
+        form.action=API_BASE+"/entry-form";
+        form.style.display="none";
+        Object.entries(data).forEach(([k,v])=>{const input=document.createElement("input");input.type="hidden";input.name=k;input.value=typeof v==="object"?JSON.stringify(v):String(v??"");form.appendChild(input)});
+        document.body.appendChild(form);
+        msg.innerHTML='<div class="game">⏳ Guardando tu quiniela...</div>';
+        form.submit();
       }catch(err){
-        if(String(err.message||err).toLowerCase().includes("failed to fetch")){
-          msg.innerHTML='<div class="game">⏳ Enviando por canal alterno seguro...</div>';
-          const form=document.createElement("form"); form.method="POST"; form.action=API_BASE+"/entry-form"; form.style.display="none";
-          const data={week_id:d.week.id,name,picks,star_game_id:star.value,tiebreaker_away_points:tba,tiebreaker_home_points:tbh,tiebreaker_points:tba+tbh,gatorade_color:d.week.phase==="super_bowl"?(gat?.value||""):""};
-          Object.entries(data).forEach(([k,v])=>{const input=document.createElement("input");input.type="hidden";input.name=k;input.value=typeof v==="object"?JSON.stringify(v):String(v??"");form.appendChild(input)});
-          document.body.appendChild(form); form.submit();
-        }else{
-          msg.innerHTML=`<div class="game error"><b>⚠️ No se pudo enviar:</b> ${esc(err.message)}</div>`;
-        }
+        msg.innerHTML=`<div class="game error"><b>⚠️ No se pudo preparar el envío:</b> ${esc(err.message||err)}</div>`;
       }
     };
   }catch(e){app.innerHTML=`<div class="c error">${esc(e.message)}</div>`}
