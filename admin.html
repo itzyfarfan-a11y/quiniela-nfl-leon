@@ -1,41 +1,232 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Admin Quiniela NFL León</title>
 <style>
-:root{--n:#013369;--r:#d50a0a;--s:#c9cdd2}*{box-sizing:border-box}body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;margin:0;background:linear-gradient(160deg,#eef2f6,#fff);color:#10233b}
-.w{max-width:900px;margin:auto;padding:12px}.h{background:linear-gradient(135deg,var(--n),#061b33);color:#fff;padding:20px;border-radius:18px;border:2px solid var(--s);text-align:center}.logo{width:68px;height:78px;margin:auto auto 7px;border:4px solid #fff;display:grid;place-items:center;font-weight:1000;font-size:20px;color:var(--r);background:#fff;clip-path:polygon(50% 0,100% 18%,94% 78%,50% 100%,6% 78%,0 18%)}h1{margin:4px 0;font-size:27px}.c{background:#fff;padding:14px;margin:10px 0;border-radius:14px;border:1px solid #d7dce2}.entry,.game{border:1px solid #d7dce2;border-radius:12px;padding:10px;margin:8px 0}.input,select{padding:11px;border:1px solid #ccd3da;border-radius:9px;font-size:16px;width:100%}.btn{padding:11px 14px;border:0;border-radius:10px;font-weight:900;cursor:pointer;min-height:44px}.red{background:var(--r);color:#fff}.navy{background:var(--n);color:#fff}.row{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}.muted{color:#667381;font-size:13px}.table{width:100%;border-collapse:collapse}.table td,.table th{padding:8px;border-bottom:1px solid #e2e6ea;text-align:left;font-size:14px}.winnerRow{background:rgba(34,197,94,.25)!important;font-weight:900}@media(max-width:600px){.w{padding:8px}.btn{width:100%}.row .input{width:48%!important}.table{display:block;overflow-x:auto;white-space:nowrap}}
+:root{--n:#013369;--r:#d50a0a;--s:#c9cdd2}
+*{box-sizing:border-box}
+body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;margin:0;background:linear-gradient(160deg,#eef2f6,#fff);color:#10233b}
+.w{max-width:900px;margin:auto;padding:12px}
+.h{background:linear-gradient(135deg,var(--n),#061b33);color:#fff;padding:20px;border-radius:18px;border:2px solid var(--s);text-align:center}
+.logo{width:68px;height:78px;margin:auto auto 7px;border:4px solid #fff;display:grid;place-items:center;font-weight:1000;font-size:20px;color:var(--r);background:#fff;clip-path:polygon(50% 0,100% 18%,94% 78%,50% 100%,6% 78%,0 18%)}
+h1{margin:4px 0;font-size:27px}
+.c{background:#fff;padding:14px;margin:10px 0;border-radius:14px;border:1px solid #d7dce2}
+.entry,.game{border:1px solid #d7dce2;border-radius:12px;padding:10px;margin:8px 0}
+.input,select{padding:11px;border:1px solid #ccd3da;border-radius:9px;font-size:16px;width:100%}
+.btn{padding:11px 14px;border:0;border-radius:10px;font-weight:900;cursor:pointer;min-height:44px}
+.btn:disabled{opacity:.6;cursor:wait}
+.red{background:var(--r);color:#fff}.navy{background:var(--n);color:#fff}
+.row{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.muted{color:#667381;font-size:13px}
+.table{width:100%;border-collapse:collapse}
+.table td,.table th{padding:8px;border-bottom:1px solid #e2e6ea;text-align:left;font-size:14px}
+.winnerRow{background:rgba(34,197,94,.25)!important;font-weight:900}
+.status{padding:10px;border-radius:10px;background:#f3f6f9;margin-top:10px;font-size:14px}
+@media(max-width:600px){
+.w{padding:8px}.btn{width:100%}.row .input{width:48%!important}
+.table{display:block;overflow-x:auto;white-space:nowrap}
+}
 </style>
 </head>
-<body><div class="w"><div class="h"><div class="logo">NFL</div><h1>ADMIN · QUINIELA NFL LEÓN</h1></div><div class="c" id="login"><input class="input" id="pin" type="password" placeholder="Código de administradora"><button class="btn navy" style="width:100%;margin-top:8px" onclick="go()">ENTRAR</button></div><div id="app"></div></div>
+<body>
+<div class="w">
+  <div class="h">
+    <div class="logo">NFL</div>
+    <h1>ADMIN · QUINIELA NFL LEÓN</h1>
+  </div>
+
+  <div class="c" id="login">
+    <input class="input" id="pin" type="password" placeholder="Código de administradora" autocomplete="current-password">
+    <button class="btn navy" style="width:100%;margin-top:8px" id="loginBtn" onclick="go()">ENTRAR</button>
+    <div id="loginStatus" class="status" style="display:none"></div>
+  </div>
+
+  <div id="app"></div>
+</div>
+
 <script>
 const API_BASE="https://picivrqgmckrwutarhyw.supabase.co/functions/v1/nfl-quiniela";
-const api=(p,o={})=>{const opts={...o};opts.headers={...(o.headers||{})};if((opts.method||"GET").toUpperCase()!=="GET")opts.headers["Content-Type"]="application/json";return fetch(API_BASE+p,opts).then(async r=>{const x=await r.json();if(!r.ok)throw Error(x.error||"Error");return x});};
 let P="";
-async function go(){P=pin.value;try{await load();login.style.display="none"}catch(e){alert("Código incorrecto")}}
-async function load(){
- const d=await api("/admin/data",{method:"POST",body:JSON.stringify({pin:P})});
- let h=`<div class="c"><div class="row"><b>Jornada ${d.week.week_label}</b><b>Premio $${d.prize}</b></div><div class="muted">${d.count} participantes · ${d.paid} pagos confirmados</div>
- <button class="btn navy" onclick="refresh()">↻ Actualizar NFL</button>
- <div class="row" style="margin-top:8px"><button class="btn navy" onclick="psync('wild_card')">Wild Card</button><button class="btn navy" onclick="psync('divisional')">Divisional</button><button class="btn navy" onclick="psync('conference')">Conference</button><button class="btn red" onclick="psync('super_bowl')">Super Bowl</button></div></div>
- <div class="c"><h3>Pagos</h3>`;
- d.entries.forEach(e=>h+=`<div class="entry"><div><b>${e.participant_name}</b><div>${e.total_points} puntos</div></div><button class="btn ${e.payment_status==="paid"?"navy":"red"}" onclick="pay('${e.id}','${e.payment_status==="paid"?"pending":"paid"}')">${e.payment_status==="paid"?"Pagado ✓":"Confirmar pago"}</button></div>`);
- h+='</div><div class="c"><h3>Resultados</h3>';
- d.games.forEach(g=>h+=`<div class="game"><b>${g.away_abbr} vs ${g.home_abbr}</b><select class="input" id="w${g.id}"><option value="">Pendiente</option><option value="${g.away_abbr}" ${g.winner_abbr===g.away_abbr?"selected":""}>${g.away_abbr} gana</option><option value="${g.home_abbr}" ${g.winner_abbr===g.home_abbr?"selected":""}>${g.home_abbr} gana</option></select><div class="row"><input class="input" style="width:48%" id="a${g.id}" type="number" min="0" placeholder="Visitante" value="${g.away_score??""}"><input class="input" style="width:48%" id="h${g.id}" type="number" min="0" placeholder="Local" value="${g.home_score??""}"></div><button class="btn navy" onclick="res('${g.id}')">Guardar resultado</button></div>`);
- h+='</div>';
- if(d.week.phase==="super_bowl")h+=`<div class="c"><b>🥤 Gatorade real del Super Bowl</b><select class="input" id="gca"><option value="">Selecciona color</option><option>Naranja</option><option>Amarillo</option><option>Azul</option><option>Verde</option><option>Rojo</option><option>Morado</option><option>Otro</option></select><button class="btn navy" style="margin-top:8px" onclick="setGatorade()">Guardar Gatorade</button></div>`;
- h+=`<div class="c"><button class="btn red" style="width:100%" onclick="closeWeek()">🔒 CERRAR JORNADA Y DEFINIR GANADOR</button></div>
- <div class="c"><h3>🏆 Historial y tabla general</h3><button class="btn navy" onclick="hist()">Ver historial</button><div id="history"></div></div>
- <div class="c"><h3>Tabla de posiciones</h3><div class="muted">Orden: puntos totales → desempate → aciertos</div><table class="table"><tr><th>#</th><th>Nombre</th><th>Aciertos</th><th>Puntos</th><th>Desempate</th><th>Pago</th></tr>`;
- d.entries.forEach((e,i)=>h+=`<tr><td>${i+1}</td><td>${e.participant_name}</td><td>${e.correct_picks} ${e.star_points>0?"⭐":"—"}</td><td><b>${e.total_points}</b></td><td>${e.score_distance===999999?"—":e.score_distance}</td><td>${e.payment_status}</td></tr>`);
- h+='</table></div>';app.innerHTML=h;
+
+function el(id){return document.getElementById(id)}
+
+async function api(path,options={}){
+  const opts={...options};
+  opts.headers={...(options.headers||{})};
+  if((opts.method||"GET").toUpperCase()!=="GET"){
+    opts.headers["Content-Type"]="application/json";
+  }
+  const r=await fetch(API_BASE+path,opts);
+  let x={};
+  try{x=await r.json()}catch(_){}
+  if(!r.ok)throw Error(x.error||("HTTP "+r.status));
+  return x;
 }
-async function pay(id,status){await api("/admin/payment",{method:"POST",body:JSON.stringify({pin:P,id,status})});load()}
-async function res(id){await api("/admin/result",{method:"POST",body:JSON.stringify({pin:P,id,winner_abbr:document.getElementById("w"+id).value,total_points:null,away_score:document.getElementById("a"+id).value===""?null:+document.getElementById("a"+id).value,home_score:document.getElementById("h"+id).value===""?null:+document.getElementById("h"+id).value})});load()}
-async function refresh(){await api("/admin/refresh",{method:"POST",body:JSON.stringify({pin:P})});load()}
-async function setGatorade(){const c=document.getElementById("gca").value;if(!c)return alert("Selecciona el color.");const d=await api("/admin/data",{method:"POST",body:JSON.stringify({pin:P})});await api("/admin/gatorade",{method:"POST",body:JSON.stringify({pin:P,week_id:d.week.id,color:c}));alert("Gatorade real guardado.");load()}
-async function psync(stage){const now=new Date(),season=now.getUTCMonth()>=7?now.getUTCFullYear():now.getUTCFullYear()-1;const d=await api("/admin/playoff-sync",{method:"POST",body:JSON.stringify({pin:P,stage,season}));alert("Etapa sincronizada: "+d.week.week_label);load()}
-async function closeWeek(){if(!confirm("¿Cerrar esta jornada y guardar oficialmente al ganador?"))return;const d=await api("/admin/close",{method:"POST",body:JSON.stringify({pin:P}));alert(d.winner?"Ganador: "+d.winner.participant_name+" · "+d.winner.total_points+" puntos":"No hay ganador todavía");load()}
-async function hist(){const d=await api("/admin/history",{method:"POST",body:JSON.stringify({pin:P})});let h="<b>Ganadores anteriores</b>";(d.winners||[]).forEach(w=>h+=`<div>${w.participant_name} · ${w.total_points} pts · $${w.prize}</div>`);h+="<hr><b>Tabla general acumulada</b>";(d.general||[]).forEach((x,i)=>h+=`<div>${i+1}. ${x.name} — ${x.points} pts · ${x.weeks} jornadas</div>`);history.innerHTML=h}
-</script></body></html>
+
+async function go(){
+  P=el("pin").value.trim();
+  if(!P){
+    alert("Escribe el código de administradora.");
+    return;
+  }
+  const btn=el("loginBtn"), status=el("loginStatus");
+  btn.disabled=true;
+  btn.textContent="ENTRANDO…";
+  status.style.display="block";
+  status.textContent="Conectando con el panel…";
+  try{
+    await load();
+    el("login").style.display="none";
+  }catch(e){
+    status.textContent="Error: "+(e?.message||e);
+    alert("No se pudo entrar: "+(e?.message||e));
+    btn.disabled=false;
+    btn.textContent="ENTRAR";
+  }
+}
+
+el("pin").addEventListener("keydown",e=>{
+  if(e.key==="Enter")go();
+});
+
+async function load(){
+  const d=await api("/admin/data",{
+    method:"POST",
+    body:JSON.stringify({pin:P})
+  });
+
+  let h=`<div class="c">
+    <div class="row"><b>Jornada ${d.week.week_label}</b><b>Premio $${d.prize}</b></div>
+    <div class="muted">${d.count} participantes · ${d.paid} pagos confirmados</div>
+    <button class="btn navy" onclick="refresh()">↻ Actualizar NFL</button>
+    <div class="row" style="margin-top:8px">
+      <button class="btn navy" onclick="psync('wild_card')">Wild Card</button>
+      <button class="btn navy" onclick="psync('divisional')">Divisional</button>
+      <button class="btn navy" onclick="psync('conference')">Conference</button>
+      <button class="btn red" onclick="psync('super_bowl')">Super Bowl</button>
+    </div>
+  </div>
+  <div class="c"><h3>Pagos</h3>`;
+
+  d.entries.forEach(e=>h+=`<div class="entry">
+    <div><b>${e.participant_name}</b><div>${e.total_points??0} puntos</div></div>
+    <button class="btn ${e.payment_status==="paid"?"navy":"red"}" onclick="pay('${e.id}','${e.payment_status==="paid"?"pending":"paid"}')">
+      ${e.payment_status==="paid"?"Pagado ✓":"Confirmar pago"}
+    </button>
+  </div>`);
+
+  h+=`</div><div class="c"><h3>Resultados</h3>`;
+
+  d.games.forEach(g=>h+=`<div class="game">
+    <b>${g.away_abbr} vs ${g.home_abbr}</b>
+    <select class="input" id="w${g.id}">
+      <option value="">Pendiente</option>
+      <option value="${g.away_abbr}" ${g.winner_abbr===g.away_abbr?"selected":""}>${g.away_abbr} gana</option>
+      <option value="${g.home_abbr}" ${g.winner_abbr===g.home_abbr?"selected":""}>${g.home_abbr} gana</option>
+    </select>
+    <div class="row">
+      <input class="input" style="width:48%" id="a${g.id}" type="number" min="0" placeholder="Visitante" value="${g.away_score??""}">
+      <input class="input" style="width:48%" id="h${g.id}" type="number" min="0" placeholder="Local" value="${g.home_score??""}">
+    </div>
+    <button class="btn navy" onclick="res('${g.id}')">Guardar resultado</button>
+  </div>`);
+
+  h+=`</div>`;
+
+  if(d.week.phase==="super_bowl")h+=`<div class="c">
+    <b>🥤 Gatorade real del Super Bowl</b>
+    <select class="input" id="gca">
+      <option value="">Selecciona color</option>
+      <option>Naranja</option><option>Amarillo</option><option>Azul</option>
+      <option>Verde</option><option>Rojo</option><option>Morado</option><option>Otro</option>
+    </select>
+    <button class="btn navy" style="margin-top:8px" onclick="setGatorade()">Guardar Gatorade</button>
+  </div>`;
+
+  h+=`<div class="c">
+    <button class="btn red" style="width:100%" onclick="closeWeek()">🔒 CERRAR JORNADA Y DEFINIR GANADOR</button>
+  </div>
+  <div class="c">
+    <h3>🏆 Historial y tabla general</h3>
+    <button class="btn navy" onclick="hist()">Ver historial</button>
+    <div id="history"></div>
+  </div>
+  <div class="c">
+    <h3>Tabla de posiciones</h3>
+    <div class="muted">Orden: puntos totales → desempate → aciertos</div>
+    <table class="table">
+      <tr><th>#</th><th>Nombre</th><th>Aciertos</th><th>Puntos</th><th>Desempate</th><th>Pago</th></tr>`;
+
+  d.entries.forEach((e,i)=>h+=`<tr>
+    <td>${i+1}</td><td>${e.participant_name}</td>
+    <td>${e.correct_picks??0} ${e.star_points>0?"⭐":"—"}</td>
+    <td><b>${e.total_points??0}</b></td>
+    <td>${e.score_distance===999999||e.score_distance==null?"—":e.score_distance}</td>
+    <td>${e.payment_status}</td>
+  </tr>`);
+
+  h+=`</table></div>`;
+  el("app").innerHTML=h;
+}
+
+async function pay(id,status){
+  await api("/admin/payment",{method:"POST",body:JSON.stringify({pin:P,id,status})});
+  await load();
+}
+
+async function res(id){
+  const winner=el("w"+id).value;
+  if(!winner){alert("Selecciona quién ganó.");return}
+  await api("/admin/result",{
+    method:"POST",
+    body:JSON.stringify({
+      pin:P,id,winner_abbr:winner,total_points:null,
+      away_score:el("a"+id).value===""?null:+el("a"+id).value,
+      home_score:el("h"+id).value===""?null:+el("h"+id).value
+    })
+  });
+  await load();
+}
+
+async function refresh(){
+  await api("/admin/refresh",{method:"POST",body:JSON.stringify({pin:P})});
+  await load();
+}
+
+async function setGatorade(){
+  const c=el("gca").value;
+  if(!c){alert("Selecciona el color.");return}
+  const d=await api("/admin/data",{method:"POST",body:JSON.stringify({pin:P})});
+  await api("/admin/gatorade",{method:"POST",body:JSON.stringify({pin:P,week_id:d.week.id,color:c})});
+  alert("Gatorade real guardado.");
+  await load();
+}
+
+async function psync(stage){
+  const now=new Date();
+  const season=now.getUTCMonth()>=7?now.getUTCFullYear():now.getUTCFullYear()-1;
+  const d=await api("/admin/playoff-sync",{method:"POST",body:JSON.stringify({pin:P,stage,season})});
+  alert("Etapa sincronizada: "+d.week.week_label);
+  await load();
+}
+
+async function closeWeek(){
+  if(!confirm("¿Cerrar esta jornada y guardar oficialmente al ganador?"))return;
+  const d=await api("/admin/close",{method:"POST",body:JSON.stringify({pin:P})});
+  alert(d.winner?"Ganador: "+d.winner.participant_name+" · "+d.winner.total_points+" puntos":"No hay ganador todavía");
+  await load();
+}
+
+async function hist(){
+  const d=await api("/admin/history",{method:"POST",body:JSON.stringify({pin:P})});
+  let h="<b>Ganadores anteriores</b>";
+  (d.winners||[]).forEach(w=>h+=`<div>${w.participant_name} · ${w.total_points} pts · $${w.prize}</div>`);
+  h+="<hr><b>Tabla general acumulada</b>";
+  (d.general||[]).forEach((x,i)=>h+=`<div>${i+1}. ${x.name} — ${x.points} pts · ${x.weeks} jornadas</div>`);
+  el("history").innerHTML=h;
+}
+</script>
+</body>
+</html>
