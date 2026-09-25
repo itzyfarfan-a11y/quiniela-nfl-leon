@@ -43,11 +43,9 @@ h1{margin:4px 0;font-size:28px}.c{background:#fff;padding:13px;margin:9px 0;bord
 <script>
 const API_BASE="https://picivrqgmckrwutarhyw.supabase.co/functions/v1/nfl-quiniela";
 
-/* POST sin headers personalizados para evitar preflight CORS desde GitHub Pages. */
 async function api(path,options={}){
   const opts={...options,headers:{...(options.headers||{})}};
-  if((opts.method||"GET").toUpperCase()!=="GET"){
-  }
+  if((opts.method||"GET").toUpperCase()!=="GET"){}
   const r=await fetch(API_BASE+path,opts);
   let x;
   try{x=await r.json()}catch(_){throw new Error("El servidor no respondió correctamente.")}
@@ -55,9 +53,24 @@ async function api(path,options={}){
   return x;
 }
 
-let activeEntryId=null, realtimeChannel=null, boardRefreshTimer=null;
-function stopBoardAutoRefresh(){if(boardRefreshTimer){clearInterval(boardRefreshTimer);boardRefreshTimer=null;}}
-function startBoardAutoRefresh(){stopBoardAutoRefresh();boardRefreshTimer=setInterval(async()=>{try{const x=await api('/board');renderBoard(x);}catch(_){ }},15000);}
+let activeEntryId=null,realtimeChannel=null,boardRefreshTimer=null;
+
+function stopBoardAutoRefresh(){
+  if(boardRefreshTimer){
+    clearInterval(boardRefreshTimer);
+    boardRefreshTimer=null;
+  }
+}
+
+function startBoardAutoRefresh(){
+  stopBoardAutoRefresh();
+  boardRefreshTimer=setInterval(async()=>{
+    try{
+      const x=await api('/board');
+      renderBoard(x);
+    }catch(_){}
+  },15000);
+}
 
 function startNewEntry(){
   stopBoardAutoRefresh();
@@ -69,10 +82,20 @@ function teamLogo(a){
   const m={LA:"lar",LAR:"lar",WAS:"wsh",WSH:"wsh",JAC:"jax",JAX:"jax",OAK:"lv",LV:"lv",SD:"lac",LAC:"lac",STL:"lar"};
   return "https://a.espncdn.com/i/teamlogos/nfl/500/"+(m[a]||a).toLowerCase()+".png";
 }
-function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));}
+
+function esc(v){
+  return String(v??"").replace(/[&<>"']/g,m=>({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    "\"":"&quot;",
+    "'":"&#39;"
+  }[m]));
+}
 
 async function load(){
   stopBoardAutoRefresh();
+
   const q=new URLSearchParams(location.search);
 
   if(q.get("sent")==="1"){
@@ -151,14 +174,15 @@ async function load(){
         </div>`;
 
     /* ORDEN CRONOLÓGICO:
-       1 = partido que comienza primero
-       16 = partido que comienza al final
+       1 = primer partido
+       16 = último partido
     */
     d.games.sort((a,b)=>new Date(a.kickoff_at)-new Date(b.kickoff_at));
 
     d.games.forEach((g,i)=>{
       h+=`<div class="game">
         <b>${i+1}. ${esc(g.away_abbr)} vs ${esc(g.home_abbr)}</b>
+
         <div class="matchup">
 
           <div class="teamSide">
@@ -383,7 +407,7 @@ async function showWinner(){
 
 function renderBoard(x){
 
-  /* TAMBIÉN LA TABLA PÚBLICA SE ORDENA CRONOLÓGICAMENTE */
+  /* ORDEN CRONOLÓGICO DE LOS PARTIDOS */
   const gs=[...(x.games||[])].sort(
     (a,b)=>new Date(a.kickoff_at)-new Date(b.kickoff_at)
   );
@@ -398,6 +422,7 @@ function renderBoard(x){
 
   let h=`<div class="c">
     <button class="btn navy" onclick="location.reload()">← Regresar</button>
+
     <h2>🏈 QUINIELA ${esc(x.week.week_label)}</h2>
 
     <div class="row">
@@ -416,6 +441,7 @@ function renderBoard(x){
         <thead>
           <tr>
             <th class="name"># Nombre</th>
+            <th class="summary">Puntos</th>
             <th class="summary">Aciertos</th>`;
 
   gs.forEach(g=>
@@ -427,35 +453,80 @@ function renderBoard(x){
     </th>`
   );
 
-  h+='</tr></thead><tbody>';
+  h+=`<th>🎯<br>Desempate</th>
+        </tr>
+        </thead>
+        <tbody>`;
 
   es.forEach(e=>{
 
     const rk=rankMap.get(e.id);
 
+    const pts=Number(
+      e.total_points ??
+      e.points ??
+      0
+    );
+
+    const hits=Number(
+      e.correct_picks ??
+      0
+    );
+
+    const tieAway=e.tiebreaker_away_points;
+    const tieHome=e.tiebreaker_home_points;
+
+    const tieScore=(
+      tieAway!==null &&
+      tieAway!==undefined &&
+      tieHome!==null &&
+      tieHome!==undefined
+    )
+      ? `${esc(tieAway)}–${esc(tieHome)}`
+      : "—";
+
     h+=`<tr>
-      <td class="name">${rk?rk+". ":""}${esc(e.participant_name)}</td>
-      <td class="summary">${e.correct_picks??0}</td>`;
+      <td class="name">
+        ${rk?rk+". ":""}${esc(e.participant_name)}
+      </td>
+
+      <td class="summary">
+        <b>${pts}</b>
+      </td>
+
+      <td class="summary">
+        ${hits}
+      </td>`;
 
     gs.forEach(g=>{
 
-      const done=!!g.winner_abbr,
-      p=e.picks?.[g.id],
-      ok=done&&p===g.winner_abbr,
-      cls=!done?"pending":ok?"ok":"bad",
-      star=e.star_game_id===g.id,
-      hit=star&&ok;
+      const done=!!g.winner_abbr;
+      const p=e.picks?.[g.id];
+      const ok=done&&p===g.winner_abbr;
+      const cls=!done?"pending":ok?"ok":"bad";
+      const star=e.star_game_id===g.id;
+      const hit=star&&ok;
 
       h+=`<td class="boardCell ${cls}">
         ${esc(p||"—")}
-        ${star?`<span class="starMark ${hit?"hit":""}">${hit?"★":"☆"}</span>`:""}
+        ${star
+          ? `<span class="starMark ${hit?"hit":""}">
+              ${hit?"★":"☆"}
+             </span>`
+          : ""}
       </td>`;
     });
 
-    h+='</tr>';
+    h+=`<td class="boardCell pending">
+      <b>${tieScore}</b>
+    </td>
+    </tr>`;
   });
 
-  h+='</tbody></table></div></div>';
+  h+=`</tbody>
+      </table>
+    </div>
+  </div>`;
 
   app.innerHTML=h;
 }
