@@ -39,7 +39,10 @@ h1{margin:4px 0;font-size:28px}.c{background:#fff;padding:13px;margin:9px 0;bord
 @media(max-width:520px){.w{padding:8px}.matchup{grid-template-columns:1fr 32px 1fr;gap:3px}.teamLogo{width:50px;height:50px}.teamAbbr{font-size:17px}.sideTag{padding:3px 8px}.h{padding:15px 10px}h1{font-size:24px}.logo{width:58px;height:66px}.c{padding:11px;margin:8px 0}.helpBtns{grid-template-columns:1fr}.btn{width:100%}}
 </style>
 </head>
-<body><div class="w" id="app"></div>
+
+<body>
+<div class="w" id="app"></div>
+
 <script>
 const API_BASE="https://picivrqgmckrwutarhyw.supabase.co/functions/v1/nfl-quiniela";
 
@@ -48,7 +51,9 @@ async function api(path,options={}){
   if((opts.method||"GET").toUpperCase()!=="GET"){}
   const r=await fetch(API_BASE+path,opts);
   let x;
-  try{x=await r.json()}catch(_){throw new Error("El servidor no respondió correctamente.")}
+  try{x=await r.json()}catch(_){
+    throw new Error("El servidor no respondió correctamente.")
+  }
   if(!r.ok)throw new Error(x.error||"Error al comunicarse con el servidor.");
   return x;
 }
@@ -64,6 +69,7 @@ function stopBoardAutoRefresh(){
 
 function startBoardAutoRefresh(){
   stopBoardAutoRefresh();
+
   boardRefreshTimer=setInterval(async()=>{
     try{
       const x=await api('/board');
@@ -79,7 +85,20 @@ function startNewEntry(){
 }
 
 function teamLogo(a){
-  const m={LA:"lar",LAR:"lar",WAS:"wsh",WSH:"wsh",JAC:"jax",JAX:"jax",OAK:"lv",LV:"lv",SD:"lac",LAC:"lac",STL:"lar"};
+  const m={
+    LA:"lar",
+    LAR:"lar",
+    WAS:"wsh",
+    WSH:"wsh",
+    JAC:"jax",
+    JAX:"jax",
+    OAK:"lv",
+    LV:"lv",
+    SD:"lac",
+    LAC:"lac",
+    STL:"lar"
+  };
+
   return "https://a.espncdn.com/i/teamlogos/nfl/500/"+(m[a]||a).toLowerCase()+".png";
 }
 
@@ -103,11 +122,24 @@ async function load(){
     <div style="font-size:44px">✅</div>
     <h2>¡QUINIELA ENVIADA!</h2>
     <p>Tu quiniela quedó registrada correctamente.</p>
-    <div class="game"><b>Nombre:</b> ${esc(q.get("name"))}<br><b>Folio:</b> ${esc(q.get("folio"))}</div>
+
+    <div class="game">
+      <b>Nombre:</b> ${esc(q.get("name"))}<br>
+      <b>Folio:</b> ${esc(q.get("folio"))}
+    </div>
+
     <p><b>Pago pendiente de confirmación.</b></p>
-    <p>Realiza tu transferencia y envía el comprobante por WhatsApp escribiendo <b>NFL + el mismo nombre registrado</b>.</p>
-    <button class="btn navy" style="width:100%" type="button" onclick="startNewEntry()">↩️ NUEVA QUINIELA</button>
+
+    <p>
+      Realiza tu transferencia y envía el comprobante por WhatsApp
+      escribiendo <b>NFL + el mismo nombre registrado</b>.
+    </p>
+
+    <button class="btn navy" style="width:100%" type="button" onclick="startNewEntry()">
+      ↩️ NUEVA QUINIELA
+    </button>
     </div>`;
+
     return;
   }
 
@@ -115,130 +147,294 @@ async function load(){
     app.innerHTML=`<div class="c error">
     <h2>⚠️ No se pudo enviar</h2>
     <p>${esc(q.get("send_error"))}</p>
-    <button class="btn navy" style="width:100%" type="button" onclick="startNewEntry()">← REGRESAR A LA QUINIELA</button>
+
+    <button class="btn navy" style="width:100%" type="button" onclick="startNewEntry()">
+      ← REGRESAR A LA QUINIELA
+    </button>
     </div>`;
+
     return;
   }
 
   try{
+
     const d=await api("/week");
 
     let h=`<div class="h">
       <div class="logo">NFL</div>
       <h1>QUINIELA NFL LEÓN</h1>
+
       <b>🏈 Pronostica · Participa · Suma puntos</b>
-      <div>Entrada $${d.week.entry_fee} · Mínimo 5 · Premio $${(d.paid_count||0)*(d.week.prize_per_entry||25)}</div>
+
+      <div>
+        Entrada $${d.week.entry_fee} ·
+        Mínimo 5 ·
+        Premio $${(d.paid_count||0)*(d.week.prize_per_entry||25)}
+      </div>
+
       <div style="margin-top:8px;font-size:13px">
-      💳 Pago únicamente por transferencia · 🚫 No efectivo<br>
-      📲 Envía tu comprobante por WhatsApp y escribe <b>NFL + tu mismo nombre de registro</b>
+        💳 Pago únicamente por transferencia · 🚫 No efectivo<br>
+        📲 Envía tu comprobante por WhatsApp y escribe
+        <b>NFL + tu mismo nombre de registro</b>
       </div>
+    </div>
+
+    <div class="c">
+      <div class="row">
+        <b>Jornada ${d.week.week_label}</b>
+        <span class="muted">
+          ${d.count} registrados · ${d.paid_count||0} pagos
+        </span>
       </div>
+    </div>
+
+    <div class="c">
+      <div class="helpBtns">
+
+        <button class="btn navy" type="button" onclick="toggleHelp('fillHelp')">
+          📝 ¿CÓMO LLENAR LA QUINIELA?
+        </button>
+
+        <button class="btn navy" type="button" onclick="toggleHelp('tieHelp')">
+          🎯 ¿CÓMO FUNCIONA EL DESEMPATE?
+        </button>
+
+      </div>
+    </div>
+
+    <div class="c">
+      <button class="btn red" style="width:100%" type="button" onclick="showBoard()">
+        📊 VER QUINIELA Y RESULTADOS
+      </button>
+    </div>
+
+    <div id="fillHelp" class="c" style="display:none">
+
+      <button class="btn navy" type="button" onclick="toggleHelp('fillHelp')">
+        ← Regresar
+      </button>
+
+      <h3>📝 Cómo llenar la quiniela</h3>
+
+      <div class="game">
+        <b>1️⃣ ELIGE QUIÉN GANA</b><br>
+        En cada partido marca un equipo.
+      </div>
+
+      <div class="game">
+        <b>2️⃣ ELIGE TU ⭐ ESTRELLA</b><br>
+        Escoge solo un partido.
+        Si aciertas → <b>2 puntos</b>.
+        Si fallas → <b>0 puntos</b>.
+      </div>
+
+      <div class="game">
+        <b>3️⃣ PON EL MARCADOR 🎯</b><br>
+        Predice el marcador del último partido de la jornada (lunes).
+        No da puntos; sirve para desempatar.
+      </div>
+
+    </div>
+
+    <div id="tieHelp" class="c" style="display:none">
+
+      <button class="btn navy" type="button" onclick="toggleHelp('tieHelp')">
+        ← Regresar
+      </button>
+
+      <h3>🎯 Cómo funciona el desempate</h3>
+
+      <p>
+        Primero se comparan puntos, después la diferencia del marcador.
+      </p>
+
+      <div class="muted">
+        El marcador de desempate corresponde al último partido de la jornada
+        (lunes) y NO otorga puntos.
+      </div>
+
+    </div>
+
+    <form id="entryForm">
 
       <div class="c">
-        <div class="row">
-          <b>Jornada ${d.week.week_label}</b>
-          <span class="muted">${d.count} registrados · ${d.paid_count||0} pagos</span>
-        </div>
-      </div>
+        <b>Nombre</b>
 
-      <div class="c">
-        <div class="helpBtns">
-          <button class="btn navy" type="button" onclick="toggleHelp('fillHelp')">📝 ¿CÓMO LLENAR LA QUINIELA?</button>
-          <button class="btn navy" type="button" onclick="toggleHelp('tieHelp')">🎯 ¿CÓMO FUNCIONA EL DESEMPATE?</button>
-        </div>
-      </div>
+        <input
+          class="input"
+          id="name"
+          required
+          placeholder="Escribe tu nombre"
+        >
+      </div>`;
 
-      <div class="c">
-        <button class="btn red" style="width:100%" type="button" onclick="showBoard()">📊 VER QUINIELA Y RESULTADOS</button>
-      </div>
-
-      <div id="fillHelp" class="c" style="display:none">
-        <button class="btn navy" type="button" onclick="toggleHelp('fillHelp')">← Regresar</button>
-        <h3>📝 Cómo llenar la quiniela</h3>
-        <div class="game"><b>1️⃣ ELIGE QUIÉN GANA</b><br>En cada partido marca un equipo.</div>
-        <div class="game"><b>2️⃣ ELIGE TU ⭐ ESTRELLA</b><br>Escoge solo un partido. Si aciertas → <b>2 puntos</b>. Si fallas → <b>0 puntos</b>.</div>
-        <div class="game"><b>3️⃣ PON EL MARCADOR 🎯</b><br>Predice el marcador del último partido de la jornada (lunes). No da puntos; sirve para desempatar.</div>
-      </div>
-
-      <div id="tieHelp" class="c" style="display:none">
-        <button class="btn navy" type="button" onclick="toggleHelp('tieHelp')">← Regresar</button>
-        <h3>🎯 Cómo funciona el desempate</h3>
-        <p>Primero se comparan puntos, después la diferencia del marcador y después los aciertos.</p>
-        <div class="muted">El marcador de desempate corresponde al último partido de la jornada (lunes) y NO otorga puntos.</div>
-      </div>
-
-      <form id="entryForm">
-        <div class="c">
-          <b>Nombre</b>
-          <input class="input" id="name" required placeholder="Escribe tu nombre">
-        </div>`;
-
-    /* ORDEN CRONOLÓGICO:
-       1 = primer partido
-       16 = último partido
+    /*
+      ORDEN CRONOLÓGICO:
+      1 = primer partido
+      16 = último partido
     */
-    d.games.sort((a,b)=>new Date(a.kickoff_at)-new Date(b.kickoff_at));
+
+    d.games.sort(
+      (a,b)=>new Date(a.kickoff_at)-new Date(b.kickoff_at)
+    );
 
     d.games.forEach((g,i)=>{
+
       h+=`<div class="game">
-        <b>${i+1}. ${esc(g.away_abbr)} vs ${esc(g.home_abbr)}</b>
+
+        <b>
+          ${i+1}. ${esc(g.away_abbr)} vs ${esc(g.home_abbr)}
+        </b>
 
         <div class="matchup">
 
           <div class="teamSide">
-            <span class="sideTag visitor">VISITANTE</span>
-            <img class="teamLogo" src="${teamLogo(g.away_abbr)}" alt="${esc(g.away_team)}" onerror="this.style.display='none'">
-            <div class="teamAbbr">${esc(g.away_abbr)}</div>
-            <div class="teamName">${esc(g.away_team)}</div>
+
+            <span class="sideTag visitor">
+              VISITANTE
+            </span>
+
+            <img
+              class="teamLogo"
+              src="${teamLogo(g.away_abbr)}"
+              alt="${esc(g.away_team)}"
+              onerror="this.style.display='none'"
+            >
+
+            <div class="teamAbbr">
+              ${esc(g.away_abbr)}
+            </div>
+
+            <div class="teamName">
+              ${esc(g.away_team)}
+            </div>
+
             <label class="pick">
-              <input type="radio" name="g${g.id}" value="${esc(g.away_abbr)}" required>
+              <input
+                type="radio"
+                name="g${g.id}"
+                value="${esc(g.away_abbr)}"
+                required
+              >
               ${esc(g.away_abbr)}
             </label>
+
           </div>
 
-          <div class="vs">VS</div>
+          <div class="vs">
+            VS
+          </div>
 
           <div class="teamSide">
-            <span class="sideTag local">LOCAL</span>
-            <img class="teamLogo" src="${teamLogo(g.home_abbr)}" alt="${esc(g.home_team)}" onerror="this.style.display='none'">
-            <div class="teamAbbr">${esc(g.home_abbr)}</div>
-            <div class="teamName">${esc(g.home_team)}</div>
+
+            <span class="sideTag local">
+              LOCAL
+            </span>
+
+            <img
+              class="teamLogo"
+              src="${teamLogo(g.home_abbr)}"
+              alt="${esc(g.home_team)}"
+              onerror="this.style.display='none'"
+            >
+
+            <div class="teamAbbr">
+              ${esc(g.home_abbr)}
+            </div>
+
+            <div class="teamName">
+              ${esc(g.home_team)}
+            </div>
+
             <label class="pick">
-              <input type="radio" name="g${g.id}" value="${esc(g.home_abbr)}" required>
+              <input
+                type="radio"
+                name="g${g.id}"
+                value="${esc(g.home_abbr)}"
+                required
+              >
               ${esc(g.home_abbr)}
             </label>
+
           </div>
 
         </div>
 
         <label class="pick">
-          ⭐ <input type="radio" name="s" value="${g.id}" required>
+          ⭐
+          <input
+            type="radio"
+            name="s"
+            value="${g.id}"
+            required
+          >
           Estrella (2 puntos)
         </label>
+
       </div>`;
+
     });
 
     h+=`<div class="c">
-      <b>Desempate: marcador del último partido de la jornada (lunes)</b>
-      <div class="muted">Predice el marcador exacto; solo se usa para desempatar.</div>
+
+      <b>
+        Desempate: marcador del último partido de la jornada (lunes)
+      </b>
+
+      <div class="muted">
+        Predice el marcador exacto; solo se usa para desempatar.
+      </div>
 
       <div class="row">
+
         <div style="width:48%">
-          <span class="tieLabel">Equipo visitante</span>
-          <input class="input" id="tba" type="number" min="0" required placeholder="Puntos visitante">
+          <span class="tieLabel">
+            Equipo visitante
+          </span>
+
+          <input
+            class="input"
+            id="tba"
+            type="number"
+            min="0"
+            required
+            placeholder="Puntos visitante"
+          >
         </div>
 
         <div style="width:48%">
-          <span class="tieLabel">Equipo local</span>
-          <input class="input" id="tbh" type="number" min="0" required placeholder="Puntos local">
+          <span class="tieLabel">
+            Equipo local
+          </span>
+
+          <input
+            class="input"
+            id="tbh"
+            type="number"
+            min="0"
+            required
+            placeholder="Puntos local"
+          >
         </div>
+
       </div>
+
     </div>
 
-    <div class="c" id="gatoradeBox" style="display:${d.week.phase==="super_bowl"?"block":"none"}">
+    <div
+      class="c"
+      id="gatoradeBox"
+      style="display:${d.week.phase==="super_bowl"?"block":"none"}"
+    >
+
       <b>🥤 Desempate final — Gatorade</b>
+
       <select class="input" id="gatorade">
-        <option value="">Selecciona color</option>
+
+        <option value="">
+          Selecciona color
+        </option>
+
         <option>Naranja</option>
         <option>Amarillo</option>
         <option>Azul</option>
@@ -246,52 +442,89 @@ async function load(){
         <option>Rojo</option>
         <option>Morado</option>
         <option>Otro</option>
+
       </select>
+
     </div>
 
     <div id="submitMsg" class="submitMsg"></div>
-    <button class="btn red" style="width:100%" type="submit">ENVIAR QUINIELA</button>
+
+    <button
+      class="btn red"
+      style="width:100%"
+      type="submit"
+    >
+      ENVIAR QUINIELA
+    </button>
+
     </form>
 
     <div class="c">
-      <a href="admin.html">Acceso administradora</a>
+      <a href="admin.html">
+        Acceso administradora
+      </a>
     </div>`;
 
     app.innerHTML=h;
 
     document.getElementById("entryForm").onsubmit=ev=>{
+
       ev.preventDefault();
 
       const msg=document.getElementById("submitMsg");
-      msg.innerHTML='<div class="game">⏳ Enviando quiniela...</div>';
+
+      msg.innerHTML=
+        '<div class="game">⏳ Enviando quiniela...</div>';
 
       try{
+
         const picks={};
 
         d.games.forEach(g=>{
-          const el=document.querySelector(`input[name="g${g.id}"]:checked`);
+
+          const el=document.querySelector(
+            `input[name="g${g.id}"]:checked`
+          );
 
           if(!el)
             throw new Error("Falta seleccionar un ganador.");
 
           picks[g.id]=el.value;
+
         });
 
-        const name=(document.getElementById("name").value||"").trim();
+        const name=(
+          document.getElementById("name").value||""
+        ).trim();
 
         if(!name)
           throw new Error("Escribe tu nombre.");
 
-        const star=document.querySelector('input[name="s"]:checked');
+        const star=document.querySelector(
+          'input[name="s"]:checked'
+        );
 
         if(!star)
           throw new Error("Selecciona una Estrella.");
 
-        const tba=Number(document.getElementById("tba").value);
-        const tbh=Number(document.getElementById("tbh").value);
+        const tba=Number(
+          document.getElementById("tba").value
+        );
 
-        if(!Number.isInteger(tba)||tba<0||!Number.isInteger(tbh)||tbh<0)
-          throw new Error("El marcador de desempate no es válido.");
+        const tbh=Number(
+          document.getElementById("tbh").value
+        );
+
+        if(
+          !Number.isInteger(tba) ||
+          tba<0 ||
+          !Number.isInteger(tbh) ||
+          tbh<0
+        ){
+          throw new Error(
+            "El marcador de desempate no es válido."
+          );
+        }
 
         const gat=document.getElementById("gatorade");
 
@@ -303,7 +536,10 @@ async function load(){
           tiebreaker_away_points:tba,
           tiebreaker_home_points:tbh,
           tiebreaker_points:tba+tbh,
-          gatorade_color:d.week.phase==="super_bowl"?(gat?.value||""):""
+          gatorade_color:
+            d.week.phase==="super_bowl"
+              ?(gat?.value||"")
+              :""
         };
 
         const form=document.createElement("form");
@@ -313,154 +549,352 @@ async function load(){
         form.style.display="none";
 
         Object.entries(data).forEach(([k,v])=>{
+
           const input=document.createElement("input");
+
           input.type="hidden";
           input.name=k;
-          input.value=typeof v==="object"?JSON.stringify(v):String(v??"");
+          input.value=
+            typeof v==="object"
+              ?JSON.stringify(v)
+              :String(v??"");
+
           form.appendChild(input);
+
         });
 
         document.body.appendChild(form);
 
-        msg.innerHTML='<div class="game">⏳ Guardando tu quiniela...</div>';
+        msg.innerHTML=
+          '<div class="game">⏳ Guardando tu quiniela...</div>';
 
         form.submit();
 
       }catch(err){
-        msg.innerHTML=`<div class="game error"><b>⚠️ No se pudo preparar el envío:</b> ${esc(err.message||err)}</div>`;
+
+        msg.innerHTML=
+          `<div class="game error">
+            <b>⚠️ No se pudo preparar el envío:</b>
+            ${esc(err.message||err)}
+          </div>`;
+
       }
+
     };
 
   }catch(e){
-    app.innerHTML=`<div class="c error">${esc(e.message)}</div>`
+
+    app.innerHTML=
+      `<div class="c error">${esc(e.message)}</div>`;
+
   }
 }
 
 function toggleHelp(id){
+
   const x=document.getElementById(id);
+
   if(x)
-    x.style.display=x.style.display==="none"?"block":"none"
+    x.style.display=
+      x.style.display==="none"
+        ?"block"
+        :"none";
 }
 
 async function showBoard(){
+
   try{
+
     renderBoard(await api("/board"));
-    startBoardAutoRefresh()
+
+    startBoardAutoRefresh();
+
   }catch(e){
-    alert(e.message)
+
+    alert(e.message);
+
   }
 }
 
 async function refreshBoard(){
+
   try{
+
     const x=await api("/board");
+
     renderBoard(x);
 
     const m=document.getElementById("boardMsg");
 
     if(m)
-      m.textContent="🏆 TABLA GENERAL ACTUALIZADA"
+      m.textContent=
+        "🏆 TABLA GENERAL ACTUALIZADA";
 
   }catch(e){
-    alert(e.message)
+
+    alert(e.message);
+
   }
 }
 
 async function showWinner(){
+
   stopBoardAutoRefresh();
 
   try{
+
     const x=await api("/board"),
     r=x.ranking||[],
     wid=x.winner_entry_id;
 
-    let h='<div class="c"><button class="btn navy" onclick="showBoard()">← Regresar</button><h2>🥇 GANADOR</h2>';
+    let h=
+      '<div class="c">' +
+      '<button class="btn navy" onclick="showBoard()">← Regresar</button>' +
+      '<h2>🥇 GANADOR</h2>';
 
-    if(!wid)
-      h+=`<div class="muted">Ganador oficial pendiente de cierre.</div>
-      <div style="margin-top:8px">
-      <b>Premio acumulado:</b> $${(x.week?.prize_per_entry||25)*(x.entries||[]).filter(e=>e.payment_status==="paid").length}
+    if(!wid){
+
+      h+=`
+        <div class="muted">
+          Ganador oficial pendiente de cierre.
+        </div>
+
+        <div style="margin-top:8px">
+          <b>Premio acumulado:</b>
+          $${(x.week?.prize_per_entry||25)*
+          (x.entries||[]).filter(
+            e=>e.payment_status==="paid"
+          ).length}
+        </div>`;
+
+    }
+
+    /*
+      TABLA DEL GANADOR:
+      Se eliminó completamente la columna ACIERTOS.
+      Solo se muestran los PUNTOS acumulados.
+    */
+
+    h+=`
+      <table class="table">
+        <tr>
+          <th>#</th>
+          <th>Nombre</th>
+          <th>Estrella</th>
+          <th>Puntos</th>
+          <th>Desempate</th>
+          <th>Premio</th>
+        </tr>`;
+
+    r.forEach((e,i)=>{
+
+      h+=`
+        <tr class="${e.id===wid?"winnerRow":""}">
+
+          <td>
+            ${i+1}
+          </td>
+
+          <td>
+            <b>${esc(e.participant_name)}</b>
+            ${
+              e.id===wid
+                ?' <span class="winnerBadge">🏆 GANADOR</span>'
+                :""
+            }
+          </td>
+
+          <td>
+            ${e.star_points>0?"⭐":"—"}
+          </td>
+
+          <td>
+            ${e.total_points}
+          </td>
+
+          <td>
+            ${
+              e.score_distance===999999
+                ?"—"
+                :e.score_distance
+            }
+          </td>
+
+          <td>
+            ${
+              e.id===wid
+                ?"$"+
+                  (
+                    (x.entries||[]).filter(
+                      z=>z.payment_status==="paid"
+                    ).length
+                  )*
+                  (x.week?.prize_per_entry||25)
+                :"—"
+            }
+          </td>
+
+        </tr>`;
+
+    });
+
+    h+=`
+      </table>
       </div>`;
-
-    h+='<table class="table"><tr><th>#</th><th>Nombre</th><th>Estrella</th><th>Puntos</th><th>Desempate</th><th>Aciertos</th><th>Premio</th></tr>';
-
-    r.forEach((e,i)=>
-      h+=`<tr class="${e.id===wid?"winnerRow":""}">
-      <td>${i+1}</td>
-      <td><b>${esc(e.participant_name)}</b>${e.id===wid?' <span class="winnerBadge">🏆 GANADOR</span>':""}</td>
-      <td>${e.star_points>0?"⭐":"—"}</td>
-      <td>${e.total_points}</td>
-      <td>${e.score_distance===999999?"—":e.score_distance}</td>
-      <td>${e.correct_picks}</td>
-      <td>${e.id===wid?"$"+((x.entries||[]).filter(z=>z.payment_status==="paid").length)*(x.week?.prize_per_entry||25):"—"}</td>
-      </tr>`
-    );
-
-    h+='</table></div>';
 
     app.innerHTML=h;
 
   }catch(e){
-    alert(e.message)
+
+    alert(e.message);
+
   }
 }
 
 function renderBoard(x){
 
-  /* ORDEN CRONOLÓGICO DE LOS PARTIDOS */
+  /*
+    ORDEN CRONOLÓGICO DE LOS PARTIDOS
+  */
+
   const gs=[...(x.games||[])].sort(
-    (a,b)=>new Date(a.kickoff_at)-new Date(b.kickoff_at)
+    (a,b)=>
+      new Date(a.kickoff_at)-
+      new Date(b.kickoff_at)
   );
 
   const entries=x.entries||[],
   ranking=x.ranking||[],
-  rankMap=new Map(ranking.map(z=>[z.id,z.rank]));
+  rankMap=new Map(
+    ranking.map(z=>[z.id,z.rank])
+  );
 
   const es=[...entries].sort(
-    (a,b)=>(rankMap.get(a.id)??999999)-(rankMap.get(b.id)??999999)
+    (a,b)=>
+      (rankMap.get(a.id)??999999)-
+      (rankMap.get(b.id)??999999)
   );
 
-  let h=`<div class="c">
-    <button class="btn navy" onclick="location.reload()">← Regresar</button>
+  let h=`
+    <div class="c">
 
-    <h2>🏈 QUINIELA ${esc(x.week.week_label)}</h2>
+      <button
+        class="btn navy"
+        onclick="location.reload()"
+      >
+        ← Regresar
+      </button>
 
-    <div class="row">
-      <button class="btn navy" onclick="refreshBoard()">🏆 ¿VOY GANANDO?</button>
-      <button class="btn red" onclick="showWinner()">🥇 GANADOR</button>
-    </div>
+      <h2>
+        🏈 QUINIELA ${esc(x.week.week_label)}
+      </h2>
 
-    <div id="boardMsg" class="muted" style="margin-top:6px"></div>
+      <div class="row">
 
-    <div class="muted" style="margin:8px 0">
-      🟢 Acertó · 🔴 Falló · ⚪ Pendiente · ☆ Estrella elegida · ★ Estrella acertada
-    </div>
+        <button
+          class="btn navy"
+          onclick="refreshBoard()"
+        >
+          🏆 ¿VOY GANANDO?
+        </button>
 
-    <div class="boardWrap">
-      <table id="boardTable" class="board">
-        <thead>
-          <tr>
-            <th class="name"># Nombre</th>
-            <th class="summary">Puntos</th>
-            <th class="summary">Aciertos</th>`;
+        <button
+          class="btn red"
+          onclick="showWinner()"
+        >
+          🥇 GANADOR
+        </button>
+
+      </div>
+
+      <div
+        id="boardMsg"
+        class="muted"
+        style="margin-top:6px"
+      ></div>
+
+      <div
+        class="muted"
+        style="margin:8px 0"
+      >
+        🟢 Acertó ·
+        🔴 Falló ·
+        ⚪ Pendiente ·
+        ☆ Estrella elegida ·
+        ★ Estrella acertada
+      </div>
+
+      <div class="boardWrap">
+
+        <table
+          id="boardTable"
+          class="board"
+        >
+
+          <thead>
+
+            <tr>
+
+              <th class="name">
+                # Nombre
+              </th>
+
+              <th class="summary">
+                Puntos
+              </th>`;
+
+  /*
+    AQUÍ SE ELIMINÓ:
+    <th class="summary">Aciertos</th>
+  */
 
   gs.forEach(g=>
-    h+=`<th>
-      <img src="${teamLogo(g.away_abbr)}" width="20" height="20" onerror="this.style.display='none'">
-      <br>${esc(g.away_abbr)}
-      <br>vs<br>
-      ${esc(g.home_abbr)}
-    </th>`
+
+    h+=`
+      <th>
+
+        <img
+          src="${teamLogo(g.away_abbr)}"
+          width="20"
+          height="20"
+          onerror="this.style.display='none'"
+        >
+
+        <br>
+        ${esc(g.away_abbr)}
+
+        <br>
+        vs
+        <br>
+
+        ${esc(g.home_abbr)}
+
+      </th>`
+
   );
 
-  h+=`<th>🎯<br>Desempate</th>
-        </tr>
-        </thead>
-        <tbody>`;
+  h+=`
+              <th>
+                🎯<br>
+                Desempate
+              </th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>`;
 
   es.forEach(e=>{
 
     const rk=rankMap.get(e.id);
+
+    /*
+      SOLO SE TOMA EL TOTAL DE PUNTOS.
+      El backend ya calcula:
+      - acierto normal = 1 punto
+      - estrella acertada = +1 adicional
+    */
 
     const pts=Number(
       e.total_points ??
@@ -468,13 +902,11 @@ function renderBoard(x){
       0
     );
 
-    const hits=Number(
-      e.correct_picks ??
-      0
-    );
+    const tieAway=
+      e.tiebreaker_away_points;
 
-    const tieAway=e.tiebreaker_away_points;
-    const tieHome=e.tiebreaker_home_points;
+    const tieHome=
+      e.tiebreaker_home_points;
 
     const tieScore=(
       tieAway!==null &&
@@ -482,56 +914,91 @@ function renderBoard(x){
       tieHome!==null &&
       tieHome!==undefined
     )
-      ? `${esc(tieAway)}–${esc(tieHome)}`
-      : "—";
+      ?`${esc(tieAway)}–${esc(tieHome)}`
+      :"—";
 
-    h+=`<tr>
-      <td class="name">
-        ${rk?rk+". ":""}${esc(e.participant_name)}
-      </td>
+    h+=`
+      <tr>
 
-      <td class="summary">
-        <b>${pts}</b>
-      </td>
+        <td class="name">
+          ${
+            rk
+              ?rk+". "
+              :""
+          }${esc(e.participant_name)}
+        </td>
 
-      <td class="summary">
-        ${hits}
-      </td>`;
+        <td class="summary">
+          <b>${pts}</b>
+        </td>`;
 
     gs.forEach(g=>{
 
       const done=!!g.winner_abbr;
-      const p=e.picks?.[g.id];
-      const ok=done&&p===g.winner_abbr;
-      const cls=!done?"pending":ok?"ok":"bad";
-      const star=e.star_game_id===g.id;
-      const hit=star&&ok;
 
-      h+=`<td class="boardCell ${cls}">
-        ${esc(p||"—")}
-        ${star
-          ? `<span class="starMark ${hit?"hit":""}">
-              ${hit?"★":"☆"}
-             </span>`
-          : ""}
-      </td>`;
+      const p=e.picks?.[g.id];
+
+      const ok=
+        done &&
+        p===g.winner_abbr;
+
+      const cls=
+        !done
+          ?"pending"
+          :ok
+            ?"ok"
+            :"bad";
+
+      const star=
+        e.star_game_id===g.id;
+
+      const hit=
+        star&&ok;
+
+      h+=`
+        <td class="boardCell ${cls}">
+
+          ${esc(p||"—")}
+
+          ${
+            star
+              ?`
+                <span
+                  class="starMark ${hit?"hit":""}"
+                >
+                  ${hit?"★":"☆"}
+                </span>
+              `
+              :""
+          }
+
+        </td>`;
+
     });
 
-    h+=`<td class="boardCell pending">
-      <b>${tieScore}</b>
-    </td>
-    </tr>`;
+    h+=`
+        <td class="boardCell pending">
+          <b>${tieScore}</b>
+        </td>
+
+      </tr>`;
+
   });
 
-  h+=`</tbody>
-      </table>
-    </div>
-  </div>`;
+  h+=`
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>`;
 
   app.innerHTML=h;
 }
 
 load();
 </script>
+
 </body>
 </html>
