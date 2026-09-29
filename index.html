@@ -85,7 +85,10 @@ async function load(){
       <div class="c"><div class="row"><b>Jornada ${d.week.week_label}</b><span class="muted">${d.count} registrados · ${d.paid_count||0} pagos</span></div></div>
       <div class="c"><div class="helpBtns"><button class="btn navy" type="button" onclick="toggleHelp('fillHelp')">📝 ¿CÓMO LLENAR LA QUINIELA?</button><button class="btn navy" type="button" onclick="toggleHelp('tieHelp')">🎯 ¿CÓMO FUNCIONA EL DESEMPATE?</button></div></div>
       <div class="c"><button class="btn red" style="width:100%" type="button" onclick="showBoard()">📊 VER QUINIELA Y RESULTADOS</button></div>
-      <div class="c" id="winnerHistory"><h3 style="margin-top:0">🏆 GANADORES DE JORNADAS</h3><div class="historyLoading">Cargando historial de ganadores...</div></div>
+      <div class="c" id="winnerHistory">
+        <button class="btn navy" style="width:100%" type="button" onclick="toggleWinnerHistory()">🏆 GANADORES ANTERIORES</button>
+        <div id="winnerHistoryContent" style="display:none;margin-top:10px"><div class="historyLoading">Cargando historial de ganadores...</div></div>
+      </div>
       <div id="fillHelp" class="c" style="display:none"><button class="btn navy" type="button" onclick="toggleHelp('fillHelp')">← Regresar</button><h3>📝 Cómo llenar la quiniela</h3>
       <div class="game"><b>1️⃣ ELIGE QUIÉN GANA</b><br>En cada partido marca un equipo.</div>
       <div class="game"><b>2️⃣ ELIGE TU ⭐ ESTRELLA</b><br>Escoge solo un partido. Si aciertas → <b>2 puntos</b>. Si fallas → <b>0 puntos</b>.</div>
@@ -148,27 +151,32 @@ async function load(){
 
 
 async function loadWinnerHistory(){
-  const box=document.getElementById("winnerHistory");
-  if(!box)return;
+  const content=document.getElementById("winnerHistoryContent");
+  if(!content)return;
   try{
     const x=await api("/public-winners");
     const winners=Array.isArray(x.winners)?x.winners:[];
     if(!winners.length){
-      box.innerHTML='<h3 style="margin-top:0">🏆 GANADORES DE JORNADAS</h3><div class="historyEmpty">Todavía no hay jornadas cerradas.</div>';
+      content.innerHTML='<div class="historyEmpty">Todavía no hay jornadas cerradas.</div>';
       return;
     }
-    let h='<h3 style="margin-top:0">🏆 GANADORES DE JORNADAS</h3><div class="winnerHistory">';
+    let h='<div class="winnerHistory">';
     winners.forEach((w,i)=>{
-      const label=w.week_label?`Jornada ${esc(w.week_label)}`:`Jornada ${w.week_id||i+1}`;
-      h+=`<div class="winnerCard"><div class="wk">${label}</div><div class="nm">🏆 ${esc(w.participant_name||"Sin nombre")}</div><div class="meta">${Number(w.total_points||0)} puntos · Premio <b>$${Number(w.prize||0).toLocaleString("es-MX")}</b></div></div>`;
+      const n=3+i;
+      h+=`<div class="winnerCard"><div class="wk">Ganador de la Jornada ${n}</div><div class="nm">🏆 ${esc(w.participant_name||"Sin nombre")}</div><div class="meta">${Number(w.total_points||0)} puntos · Premio <b>$${Number(w.prize||0).toLocaleString("es-MX")}</b></div></div>`;
     });
     h+='</div>';
-    box.innerHTML=h;
+    content.innerHTML=h;
   }catch(e){
-    box.innerHTML='<h3 style="margin-top:0">🏆 GANADORES DE JORNADAS</h3><div class="winnerCard"><div class="wk">Jornada 2026-09-25</div><div class="nm">🏆 Miguel Martinez</div><div class="meta">10 puntos · Premio <b>$375</b></div></div><div class="historyEmpty">El historial automático se actualizará cuando el servidor esté disponible.</div>';
+    content.innerHTML='<div class="winnerCard"><div class="wk">Ganador de la Jornada 3</div><div class="nm">🏆 Miguel Martinez</div><div class="meta">10 puntos · Premio <b>$375</b></div></div><div class="historyEmpty">El historial automático se actualizará cuando el servidor esté disponible.</div>';
   }
 }
 
+function toggleWinnerHistory(){
+  const x=document.getElementById("winnerHistoryContent");
+  if(!x)return;
+  x.style.display=x.style.display==="none"?"block":"none";
+}
 function toggleHelp(id){const x=document.getElementById(id);if(x)x.style.display=x.style.display==="none"?"block":"none"}
 
 async function showBoard(){
