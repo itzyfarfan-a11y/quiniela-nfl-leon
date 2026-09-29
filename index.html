@@ -32,7 +32,7 @@ h1{margin:4px 0;font-size:28px}.c{background:#fff;padding:13px;margin:9px 0;bord
 .board th.name,.board td.name{position:sticky;left:0;z-index:3;background:#fff;text-align:left;min-width:92px;max-width:105px;font-weight:800}
 .board th.name{background:#013369;color:#fff}.boardCell{font-weight:900;min-width:65px}
 .boardCell.ok{background:rgba(34,197,94,.35);color:#14532d}.boardCell.bad{background:rgba(239,68,68,.35);color:#7f1d1d}.boardCell.pending{background:#f1f5f9;color:#64748b}
-.summary{min-width:52px;width:52px}.starMark{font-size:17px;color:#334155}.starMark.hit{color:#FFD700;text-shadow:0 0 1px #9a7600,-1px -1px 0 #fff,1px 1px 0 #b8860b;font-weight:1000}
+.summary{min-width:52px;width:52px}.resultCell{min-width:92px;font-weight:950;background:#eef2f6;color:#10233b}.resultScore{font-size:12px;line-height:1.2}.resultPending{color:#64748b;font-weight:800}.starMark{font-size:17px;color:#334155}.starMark.hit{color:#FFD700;text-shadow:0 0 1px #9a7600,-1px -1px 0 #fff,1px 1px 0 #b8860b;font-weight:1000}
 .legend{padding:5px 8px;border-radius:999px;font-weight:800;font-size:12px}.legend.g{background:#dcfce7;color:#166534}.legend.r{background:#fee2e2;color:#991b1b}.legend.p{background:#f1f5f9;color:#64748b}
 .table{width:100%;border-collapse:collapse}.table td,.table th{padding:7px;border-bottom:1px solid #e2e6ea;text-align:left;font-size:13px}
 .winnerHistory{display:grid;gap:8px}.winnerCard{border:1px solid #d8dde3;border-left:5px solid #16a34a;border-radius:12px;padding:10px;background:#f8fafc}.winnerCard .wk{font-size:12px;color:#667381;font-weight:800}.winnerCard .nm{font-size:18px;font-weight:1000;color:#14532d;margin:2px 0}.winnerCard .meta{font-size:13px;font-weight:800;color:#334155}.historyEmpty{text-align:center;color:#667381;padding:8px}.historyLoading{color:#667381;font-size:13px}.winnerRow{background:rgba(34,197,94,.25)!important;font-weight:900}.winnerBadge{background:rgba(22,163,74,.25);color:#166534;border:1px solid rgba(22,163,74,.45);padding:3px 7px;border-radius:999px;font-size:11px;font-weight:900}
@@ -204,13 +204,21 @@ function renderBoard(x){
     <div id="boardMsg" class="muted" style="margin-top:6px"></div><div class="muted" style="margin:8px 0">🟢 Acertó · 🔴 Falló · ⚪ Pendiente · ☆ Estrella elegida · ★ Estrella acertada</div>
     <div class="boardWrap"><table id="boardTable" class="board"><thead><tr><th class="name"># Nombre</th><th class="summary">Aciertos</th>`;
   gs.forEach(g=>h+=`<th><img src="${teamLogo(g.away_abbr)}" width="20" height="20" onerror="this.style.display='none'"><br>${esc(g.away_abbr)}<br>vs<br>${esc(g.home_abbr)}</th>`);
+  const lastGame=gs.length?gs[gs.length-1]:null;
+  h+=`<th class="resultCell">🎯<br>DESEMPATE</th>`;
   h+='</tr></thead><tbody>';
   es.forEach(e=>{
     const rk=rankMap.get(e.id);h+=`<tr><td class="name">${rk?rk+". ":""}${esc(e.participant_name)}</td><td class="summary">${e.correct_picks??0}</td>`;
     gs.forEach(g=>{
       const done=!!g.winner_abbr,p=e.picks?.[g.id],ok=done&&p===g.winner_abbr,cls=!done?"pending":ok?"ok":"bad",star=e.star_game_id===g.id,hit=star&&ok;
       h+=`<td class="boardCell ${cls}">${esc(p||"—")} ${star?`<span class="starMark ${hit?"hit":""}">${hit?"★":"☆"}</span>`:""}</td>`;
-    });h+='</tr>';
+    });
+    const tieAway=e.tiebreaker_away_points;
+    const tieHome=e.tiebreaker_home_points;
+    const tieHtml=tieAway!==null&&tieAway!==undefined&&tieHome!==null&&tieHome!==undefined
+      ? `<div class="resultScore">${esc(lastGame?.away_abbr||"VIS")} ${tieAway}<br>—<br>${esc(lastGame?.home_abbr||"LOC")} ${tieHome}</div>`
+      : `<span class="resultPending">—</span>`;
+    h+=`<td class="resultCell">${tieHtml}</td></tr>`;
   });
   h+='</tbody></table></div></div>';app.innerHTML=h;
 }
