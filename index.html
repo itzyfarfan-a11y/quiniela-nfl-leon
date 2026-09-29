@@ -113,7 +113,9 @@ async function load(){
       <div class="c"><a href="admin.html">Acceso administradora</a></div>`;
     app.innerHTML=h;
 
-    loadWinnerHistory();
+    // Carga diferida: primero mostramos la quiniela y después el historial para no competir con la carga inicial.
+    const loadHistory=()=>loadWinnerHistory();
+    if("requestIdleCallback" in window) requestIdleCallback(loadHistory,{timeout:1200}); else setTimeout(loadHistory,350);
 
     document.getElementById("entryForm").onsubmit=ev=>{
       ev.preventDefault();
