@@ -24,6 +24,8 @@ h1{margin:4px 0;font-size:27px}
 .table td,.table th{padding:8px;border-bottom:1px solid #e2e6ea;text-align:left;font-size:14px}
 .winnerRow{background:rgba(34,197,94,.25)!important;font-weight:900}
 .status{padding:10px;border-radius:10px;background:#f3f6f9;margin-top:10px;font-size:14px}
+#backMenu{margin-top:10px}
+#backMenu .btn{font-size:16px}
 @media(max-width:600px){
 .w{padding:8px}.btn{width:100%}.row .input{width:48%!important}
 .table{display:block;overflow-x:auto;white-space:nowrap}
@@ -35,7 +37,10 @@ h1{margin:4px 0;font-size:27px}
   <div class="h">
     <div class="logo">NFL</div>
     <h1>ADMIN · QUINIELA NFL LEÓN</h1>
-    <a href="index.html" class="btn navy" style="display:inline-block;text-decoration:none;margin-top:8px">← REGRESAR AL MENÚ</a>
+  </div>
+
+  <div class="c" id="backMenu" style="display:none">
+    <button class="btn navy" style="width:100%" type="button" onclick="backToMenu()">← REGRESAR AL MENÚ</button>
   </div>
 
   <div class="c" id="login">
@@ -99,7 +104,12 @@ function startAutoRefresh(){
   autoRefreshTimer=setInterval(async()=>{
     if(!P) return;
     try{ await load(); }catch(e){ console.warn("Actualización automática:",e); }
-  },15000);
+  },60000);
+}
+
+function backToMenu(){
+  // Regresa al portal principal de la Quiniela sin cerrar ni modificar la jornada.
+  location.href = new URL("index.html", location.href).href;
 }
 
 async function load(){
@@ -123,8 +133,8 @@ async function load(){
 
   d.entries.forEach(e=>h+=`<div class="entry">
     <div><b>${e.participant_name}</b><div>${e.total_points??0} puntos</div></div>
-    <button class="btn ${e.payment_status==="paid"?"navy":"red"}" onclick="pay('${e.id}','${e.payment_status==="paid"?"pending":"paid"}')">
-      ${e.payment_status==="paid"?"Pagado ✓":"Confirmar pago"}
+    <button class="btn ${e.payment_status==="paid"?"navy":"red"}" onclick="pay('${e.id}','${e.payment_status==="paid"?"pending":"paid"}',this)">
+      ${e.payment_status==="paid"?"Pagado ✓ · Quitar pagado":"No pagado · Confirmar pago"}
     </button>
   </div>`);
 
@@ -137,21 +147,16 @@ async function load(){
 
   d.games.forEach(g=>{
     const finished = g.away_score!==null && g.home_score!==null;
-    const ko = new Date(g.kickoff_at||0);
-    const elapsed = Date.now()-ko.getTime();
-    const live = !finished && Number.isFinite(ko.getTime()) && elapsed>=0 && elapsed<=4*60*60*1000;
-    const state = finished ? "FINAL" : live ? "🔴 EN VIVO" : "PRÓXIMO";
-    const stateStyle = finished ? "background:#e5e7eb;color:#374151" : live ? "background:#fee2e2;color:#991b1b" : "background:#dbeafe;color:#1e40af";
-    h+=`<div class="game" style="border-left:5px solid ${live?"#dc2626":finished?"#9ca3af":"#2563eb"}">
+    h+=`<div class="game">
       <div class="row">
         <b>${g.away_abbr} vs ${g.home_abbr}</b>
-        <span style="padding:4px 8px;border-radius:999px;font-size:11px;font-weight:900;${stateStyle}">${state}</span>
+        <span class="muted">${finished ? "FINAL" : "Pendiente"}</span>
       </div>
-      <div style="font-size:28px;font-weight:1000;text-align:center;margin:8px 0">
+      <div style="font-size:24px;font-weight:900;text-align:center;margin:10px 0">
         ${g.away_score??"—"} &nbsp;–&nbsp; ${g.home_score??"—"}
       </div>
       <div class="muted" style="text-align:center">
-        ${g.winner_abbr ? "Ganador: "+g.winner_abbr : live ? "Esperando marcador final" : "Esperando resultado oficial"}
+        ${g.winner_abbr ? "Ganador: "+g.winner_abbr : "Esperando resultado oficial"}
       </div>
     </div>`;
   });
@@ -190,16 +195,25 @@ async function load(){
     <td>${e.payment_status}</td>
   </tr>`);
 
-  h+=`</table></div>
-  <div class="c">
-    <a href="index.html" class="btn navy" style="display:block;text-align:center;text-decoration:none">← REGRESAR AL MENÚ PRINCIPAL</a>
-  </div>`;
+  h+=`</table></div>`;
   el("app").innerHTML=h;
 }
 
-async function pay(id,status){
-  await api("/admin/payment",{method:"POST",body:JSON.stringify({pin:P,id,status})});
-  await load();
+async function pay(id,status,btn){
+  const isUndo=status==="pending";
+  const msg=isUndo
+    ? "¿Seguro que quieres quitar el pago confirmado?\n\nEl participante volverá a quedar como NO PAGADO."
+    : "¿Confirmar que este participante ya realizó el pago?\n\nQuedará marcado como PAGADO.";
+  if(!confirm(msg))return;
+  const original=btn?.textContent||"";
+  if(btn){btn.disabled=true;btn.textContent=isUndo?"Quitando pagado…":"Confirmando pago…";}
+  try{
+    await api("/admin/payment",{method:"POST",body:JSON.stringify({pin:P,id,status})});
+    await load();
+  }catch(e){
+    if(btn){btn.disabled=false;btn.textContent=original;}
+    alert("⚠️ No se pudo actualizar el pago: "+(e.message||e));
+  }
 }
 
 async function res(id){
