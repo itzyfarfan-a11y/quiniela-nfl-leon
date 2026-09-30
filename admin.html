@@ -79,6 +79,7 @@ async function go(){
   try{
     await load();
     el("login").style.display="none";
+     startAutoRefresh();
   }catch(e){
     status.textContent="Error: "+(e?.message||e);
     alert("No se pudo entrar: "+(e?.message||e));
@@ -91,6 +92,15 @@ el("pin").addEventListener("keydown",e=>{
   if(e.key==="Enter")go();
 });
 
+let autoRefreshTimer=null;
+function startAutoRefresh(){
+  if(autoRefreshTimer) clearInterval(autoRefreshTimer);
+  autoRefreshTimer=setInterval(async()=>{
+    if(!P) return;
+    try{ await load(); }catch(e){ console.warn("Actualización automática:",e); }
+  },60000);
+}
+
 async function load(){
   const d=await api("/admin/data",{
     method:"POST",
@@ -100,7 +110,7 @@ async function load(){
   let h=`<div class="c">
     <div class="row"><b>Jornada ${d.week.week_label}</b><b>Premio $${d.prize}</b></div>
     <div class="muted">${d.count} participantes · ${d.paid} pagos confirmados</div>
-    <button class="btn navy" onclick="refresh()">↻ Actualizar NFL</button>
+    <button class="btn navy" onclick="refresh()">↻ Actualizar NFL ahora</button>
     <div class="row" style="margin-top:8px">
       <button class="btn navy" onclick="psync('wild_card')">Wild Card</button>
       <button class="btn navy" onclick="psync('divisional')">Divisional</button>
@@ -117,21 +127,28 @@ async function load(){
     </button>
   </div>`);
 
-  h+=`</div><div class="c"><h3>Resultados</h3>`;
+  h+=`</div><div class="c"><h3>Resultados</h3>
+    <div class="status" style="background:#ecfdf3;border:1px solid #86efac;color:#166534">
+      <b>🔄 Resultados automáticos</b><br>
+      Los marcadores se consultan automáticamente desde la fuente NFL. No necesitas capturarlos manualmente.
+      Esta pantalla se actualiza sola cada 60 segundos.
+    </div>`;
 
-  d.games.forEach(g=>h+=`<div class="game">
-    <b>${g.away_abbr} vs ${g.home_abbr}</b>
-    <select class="input" id="w${g.id}">
-      <option value="">Pendiente</option>
-      <option value="${g.away_abbr}" ${g.winner_abbr===g.away_abbr?"selected":""}>${g.away_abbr} gana</option>
-      <option value="${g.home_abbr}" ${g.winner_abbr===g.home_abbr?"selected":""}>${g.home_abbr} gana</option>
-    </select>
-    <div class="row">
-      <input class="input" style="width:48%" id="a${g.id}" type="number" min="0" placeholder="Visitante" value="${g.away_score??""}">
-      <input class="input" style="width:48%" id="h${g.id}" type="number" min="0" placeholder="Local" value="${g.home_score??""}">
-    </div>
-    <button class="btn navy" onclick="res('${g.id}')">Guardar resultado</button>
-  </div>`);
+  d.games.forEach(g=>{
+    const finished = g.away_score!==null && g.home_score!==null;
+    h+=`<div class="game">
+      <div class="row">
+        <b>${g.away_abbr} vs ${g.home_abbr}</b>
+        <span class="muted">${finished ? "FINAL" : "Pendiente"}</span>
+      </div>
+      <div style="font-size:24px;font-weight:900;text-align:center;margin:10px 0">
+        ${g.away_score??"—"} &nbsp;–&nbsp; ${g.home_score??"—"}
+      </div>
+      <div class="muted" style="text-align:center">
+        ${g.winner_abbr ? "Ganador: "+g.winner_abbr : "Esperando resultado oficial"}
+      </div>
+    </div>`;
+  });
 
   h+=`</div>`;
 
