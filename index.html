@@ -13,6 +13,7 @@ body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;margin:0;background
 .logo{width:64px;height:74px;margin:auto auto 6px;border:4px solid #fff;display:grid;place-items:center;font-weight:1000;font-size:20px;color:var(--r);background:#fff;clip-path:polygon(50% 0,100% 18%,94% 78%,50% 100%,6% 78%,0 18%)}
 h1{margin:4px 0;font-size:28px}.c{background:#fff;padding:13px;margin:9px 0;border-radius:14px;border:1px solid var(--line)}
 .game{border:1px solid var(--line);border-radius:14px;padding:11px;margin:8px 0}
+.gameTime{font-size:11px;font-weight:800;color:#526174;background:#f1f5f9;border-radius:7px;padding:5px 8px;margin:5px 0 8px;text-align:center}
 .input{padding:11px;border:1px solid #ccd3da;border-radius:9px;font-size:16px;width:100%}
 .btn{padding:12px 14px;border:0;border-radius:10px;font-weight:900;cursor:pointer;min-height:44px}
 .red{background:var(--r);color:#fff}.navy{background:var(--n);color:#fff}
@@ -71,6 +72,15 @@ function teamLogo(a){
 }
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));}
 
+function formatGameTime(value){
+  if(!value)return "📅 Fecha y hora por confirmar";
+  const d=new Date(value);
+  if(Number.isNaN(d.getTime()))return "📅 Fecha y hora por confirmar";
+  const day=new Intl.DateTimeFormat("es-MX",{timeZone:"America/Mexico_City",weekday:"long",day:"numeric",month:"long"}).format(d);
+  const hour=new Intl.DateTimeFormat("es-MX",{timeZone:"America/Mexico_City",hour:"numeric",minute:"2-digit",hour12:true}).format(d);
+  return "📅 "+day+" · "+hour;
+}
+
 async function load(){
   stopBoardAutoRefresh();
   const q=new URLSearchParams(location.search);
@@ -98,10 +108,10 @@ async function load(){
       <form id="entryForm"><div class="c"><b>Nombre</b><input class="input" id="name" required placeholder="Escribe tu nombre"></div>`;
 
     d.games.forEach((g,i)=>{
-      h+=`<div class="game"><b>${i+1}. ${esc(g.away_abbr)} vs ${esc(g.home_abbr)}</b><div class="matchup">
-        <div class="teamSide"><span class="sideTag visitor">VISITANTE</span><img class="teamLogo" src="${teamLogo(g.away_abbr)}" alt="${esc(g.away_team)}" onerror="this.style.display='none'"><div class="teamAbbr">${esc(g.away_abbr)}</div><div class="teamName">${esc(g.away_team)}</div><label class="pick"><input type="radio" name="g${g.id}" value="${esc(g.away_abbr)}" required> ${esc(g.away_abbr)}</label></div>
+      h+=`<div class="game"><b>${i+1}. ${esc(g.away_abbr)} vs ${esc(g.home_abbr)}</b><div class="gameTime">${formatGameTime(g.kickoff_at||g.date||g.start_time)}</div><div class="matchup">
+        <div class="teamSide"><span class="sideTag visitor">VISITANTE</span><img class="teamLogo" src="${teamLogo(g.away_abbr)}" alt="${esc(g.away_team)}" loading="lazy" decoding="async" onerror="this.style.display='none'"><div class="teamAbbr">${esc(g.away_abbr)}</div><div class="teamName">${esc(g.away_team)}</div><label class="pick"><input type="radio" name="g${g.id}" value="${esc(g.away_abbr)}" required> ${esc(g.away_abbr)}</label></div>
         <div class="vs">VS</div>
-        <div class="teamSide"><span class="sideTag local">LOCAL</span><img class="teamLogo" src="${teamLogo(g.home_abbr)}" alt="${esc(g.home_team)}" onerror="this.style.display='none'"><div class="teamAbbr">${esc(g.home_abbr)}</div><div class="teamName">${esc(g.home_team)}</div><label class="pick"><input type="radio" name="g${g.id}" value="${esc(g.home_abbr)}" required> ${esc(g.home_abbr)}</label></div>
+        <div class="teamSide"><span class="sideTag local">LOCAL</span><img class="teamLogo" src="${teamLogo(g.home_abbr)}" alt="${esc(g.home_team)}" loading="lazy" decoding="async" onerror="this.style.display='none'"><div class="teamAbbr">${esc(g.home_abbr)}</div><div class="teamName">${esc(g.home_team)}</div><label class="pick"><input type="radio" name="g${g.id}" value="${esc(g.home_abbr)}" required> ${esc(g.home_abbr)}</label></div>
         </div><label class="pick">⭐ <input type="radio" name="s" value="${g.id}" required> Estrella (2 puntos)</label></div>`;
     });
 
@@ -204,13 +214,13 @@ function renderBoard(x){
   let h=`<div class="c"><button class="btn navy" onclick="location.reload()">← Regresar</button><h2>🏈 QUINIELA ${esc(x.week.week_label)}</h2>
     <div class="row"><button class="btn navy" onclick="refreshBoard()">🏆 ¿VOY GANANDO?</button><button class="btn red" onclick="showWinner()">🥇 GANADOR</button></div>
     <div id="boardMsg" class="muted" style="margin-top:6px"></div><div class="muted" style="margin:8px 0">🟢 Acertó · 🔴 Falló · ⚪ Pendiente · ☆ Estrella elegida · ★ Estrella acertada</div>
-    <div class="boardWrap"><table id="boardTable" class="board"><thead><tr><th class="name"># Nombre</th><th class="summary">Aciertos</th>`;
-  gs.forEach(g=>h+=`<th><img src="${teamLogo(g.away_abbr)}" width="20" height="20" onerror="this.style.display='none'"><br>${esc(g.away_abbr)}<br>vs<br>${esc(g.home_abbr)}</th>`);
+    <div class="boardWrap"><table id="boardTable" class="board"><thead><tr><th class="name"># Nombre</th><th class="summary">Puntos totales</th>`;
+  gs.forEach(g=>h+=`<th><img src="${teamLogo(g.away_abbr)}" width="20" height="20" loading="lazy" decoding="async" onerror="this.style.display='none'"><br>${esc(g.away_abbr)}<br>vs<br>${esc(g.home_abbr)}<br><small>${formatGameTime(g.kickoff_at||g.date||g.start_time)}</small></th>`);
   const lastGame=gs.length?gs[gs.length-1]:null;
   h+=`<th class="resultCell">🎯<br>DESEMPATE</th>`;
   h+='</tr></thead><tbody>';
   es.forEach(e=>{
-    const rk=rankMap.get(e.id);h+=`<tr><td class="name">${rk?rk+". ":""}${esc(e.participant_name)}</td><td class="summary">${e.correct_picks??0}</td>`;
+    const rk=rankMap.get(e.id);h+=`<tr><td class="name">${rk?rk+". ":""}${esc(e.participant_name)}</td><td class="summary">${e.total_points??e.points??0}</td>`;
     gs.forEach(g=>{
       const done=!!g.winner_abbr,p=e.picks?.[g.id],ok=done&&p===g.winner_abbr,cls=!done?"pending":ok?"ok":"bad",star=e.star_game_id===g.id,hit=star&&ok;
       h+=`<td class="boardCell ${cls}">${esc(p||"—")} ${star?`<span class="starMark ${hit?"hit":""}">${hit?"★":"☆"}</span>`:""}</td>`;
