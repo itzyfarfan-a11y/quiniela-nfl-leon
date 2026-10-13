@@ -215,12 +215,12 @@ function renderBoard(x){
     <div class="row"><button class="btn navy" onclick="refreshBoard()">🏆 ¿VOY GANANDO?</button><button class="btn red" onclick="showWinner()">🥇 GANADOR</button></div>
     <div id="boardMsg" class="muted" style="margin-top:6px"></div><div class="muted" style="margin:8px 0">🟢 Acertó · 🔴 Falló · ⚪ Pendiente · ☆ Estrella elegida · ★ Estrella acertada</div>
     <div class="boardWrap"><table id="boardTable" class="board"><thead><tr><th class="name"># Nombre</th><th class="summary">Puntos totales</th>`;
-  gs.forEach(g=>h+=`<th><img src="${teamLogo(g.away_abbr)}" width="20" height="20" loading="lazy" decoding="async" onerror="this.style.display='none'"><br>${esc(g.away_abbr)}<br>vs<br>${esc(g.home_abbr)}<br><small>${formatGameTime(g.kickoff_at||g.date||g.start_time)}</small></th>`);
+  gs.forEach(g=>h+=`<th><img src="${teamLogo(g.away_abbr)}" width="20" height="20" loading="lazy" decoding="async" onerror="this.style.display='none'"><br>${esc(g.away_abbr)}<br>vs<br>${esc(g.home_abbr)}</th>`);
   const lastGame=gs.length?gs[gs.length-1]:null;
   h+=`<th class="resultCell">🎯<br>DESEMPATE</th>`;
   h+='</tr></thead><tbody>';
   es.forEach(e=>{
-    const rk=rankMap.get(e.id);h+=`<tr><td class="name">${rk?rk+". ":""}${esc(e.participant_name)}</td><td class="summary">${e.total_points??e.points??0}</td>`;
+    const rk=rankMap.get(e.id);h+=`<tr><td class="name">${rk?rk+". ":""}${esc(e.participant_name)}</td><td class="summary">${e.total_points??e.points??0} ptos.</td>`;
     gs.forEach(g=>{
       const done=!!g.winner_abbr,p=e.picks?.[g.id],ok=done&&p===g.winner_abbr,cls=!done?"pending":ok?"ok":"bad",star=e.star_game_id===g.id,hit=star&&ok;
       h+=`<td class="boardCell ${cls}">${esc(p||"—")} ${star?`<span class="starMark ${hit?"hit":""}">${hit?"★":"☆"}</span>`:""}</td>`;
