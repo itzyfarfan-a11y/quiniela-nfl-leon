@@ -214,7 +214,7 @@ function renderBoard(x){
   let h=`<div class="c"><button class="btn navy" onclick="location.reload()">← Regresar</button><h2>🏈 QUINIELA ${esc(x.week.week_label)}</h2>
     <div class="row"><button class="btn navy" onclick="refreshBoard()">🏆 ¿VOY GANANDO?</button><button class="btn red" onclick="showWinner()">🥇 GANADOR</button></div>
     <div id="boardMsg" class="muted" style="margin-top:6px"></div><div class="muted" style="margin:8px 0">🟢 Acertó · 🔴 Falló · ⚪ Pendiente · ☆ Estrella elegida · ★ Estrella acertada</div>
-    <div class="boardWrap"><table id="boardTable" class="board"><thead><tr><th class="name"># Nombre</th><th class="summary">Puntos totales</th>`;
+    <div class="boardWrap"><table id="boardTable" class="board"><thead><tr><th class="name"># Nombre</th><th class="summary">PTOS.</th>`;
   gs.forEach(g=>h+=`<th><img src="${teamLogo(g.away_abbr)}" width="20" height="20" loading="lazy" decoding="async" onerror="this.style.display='none'"><br>${esc(g.away_abbr)}<br>vs<br>${esc(g.home_abbr)}</th>`);
   const lastGame=gs.length?gs[gs.length-1]:null;
   h+=`<th class="resultCell">🎯<br>DESEMPATE</th>`;
