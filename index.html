@@ -102,7 +102,7 @@ async function load(){
       <div id="fillHelp" class="c" style="display:none"><button class="btn navy" type="button" onclick="toggleHelp('fillHelp')">← Regresar</button><h3>📝 Cómo llenar la quiniela</h3>
       <div class="game"><b>1️⃣ ELIGE QUIÉN GANA</b><br>En cada partido marca un equipo.</div>
       <div class="game"><b>2️⃣ ELIGE TU ⭐ ESTRELLA</b><br>Escoge solo un partido. Si aciertas → <b>2 puntos</b>. Si fallas → <b>0 puntos</b>.</div>
-      <div class="game"><b>3️⃣ PON EL MARCADOR 🎯</b><br>Predice el marcador del último partido del domingo. No da puntos; sirve para desempatar.</div></div>
+      <div class="game"><b>3️⃣ PON EL MARCADOR 🎯</b><br>Predice el marcador del último partido del lunes. No da puntos; sirve para desempatar.</div></div>
       <div id="tieHelp" class="c" style="display:none"><button class="btn navy" type="button" onclick="toggleHelp('tieHelp')">← Regresar</button><h3>🎯 Cómo funciona el desempate</h3>
       <p>Primero se comparan puntos, después la diferencia del marcador y después los aciertos.</p><div class="muted">El marcador de desempate NO otorga puntos.</div></div>
       <form id="entryForm"><div class="c"><b>Nombre</b><input class="input" id="name" required placeholder="Escribe tu nombre"></div>`;
@@ -115,7 +115,7 @@ async function load(){
         </div><label class="pick">⭐ <input type="radio" name="s" value="${g.id}" required> Estrella (2 puntos)</label></div>`;
     });
 
-    h+=`<div class="c"><b>Desempate: marcador del último partido del domingo</b><div class="muted">Predice el marcador exacto; solo se usa para desempatar.</div>
+    h+=`<div class="c"><b>Desempate: marcador del último partido del lunes</b><div class="muted">Predice el marcador exacto; solo se usa para desempatar.</div>
       <div class="row"><div style="width:48%"><span class="tieLabel">Equipo visitante</span><input class="input" id="tba" type="number" min="0" required placeholder="Puntos visitante"></div>
       <div style="width:48%"><span class="tieLabel">Equipo local</span><input class="input" id="tbh" type="number" min="0" required placeholder="Puntos local"></div></div></div>
       <div class="c" id="gatoradeBox" style="display:${d.week.phase==="super_bowl"?"block":"none"}"><b>🥤 Desempate final — Gatorade</b><select class="input" id="gatorade"><option value="">Selecciona color</option><option>Naranja</option><option>Amarillo</option><option>Azul</option><option>Verde</option><option>Rojo</option><option>Morado</option><option>Otro</option></select></div>
